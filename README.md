@@ -1,10 +1,13 @@
-# Template Node + Express + PostgreSQL
+# 🎟️ ClickTicket
 
-> Template usado para o desenvolvimento de backends utilizando Node, Express e PostgreSQL.
+## 📌 Sobre o projeto
 
-## ⚠️ Avisos
+O **ClickTicket** é um sistema desenvolvido para simular uma plataforma de **venda e gerenciamento de ingressos para eventos**. O projeto foi criado com finalidade **educacional**, tendo como principal objetivo aplicar, na prática, conhecimentos relacionados ao desenvolvimento de sistemas web e à construção de uma API para gerenciamento de dados.
 
-Este sistema foi configurado para ambiente de desenvolvimento. Para implantação em produção, revise as variáveis de ambiente, configurações de CORS, segurança do banco de dados, entre outros.
+Por meio da plataforma, é possível trabalhar com informações relacionadas a **usuários, eventos, atrações e ingressos**, simulando o funcionamento básico de um sistema de venda de tickets.
+
+> ⚠️ **Aviso:** Este projeto possui finalidade exclusivamente educacional e não representa uma plataforma comercial real. As informações e operações realizadas no sistema são utilizadas apenas para fins de aprendizado.
+
 
 ## 🚀 Como utilizar este template?
 
