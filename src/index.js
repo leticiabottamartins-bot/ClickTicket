@@ -11,6 +11,8 @@ app.use("/atracoes", require("./routes/atracoes"));
 app.use("/usuarios", require("./routes/usuarios"));
 app.use("/ingressos", require("./routes/ingressos"));
 app.use("/shows", require("./routes/shows"));
+app.use("/locais", require("./routes/locais"));
+
 
 
 
