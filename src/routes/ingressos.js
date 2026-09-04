@@ -6,9 +6,9 @@ const router = express.Router();
 //gettar ingresos
 router.get("/",async(req,res)=>{
     try{
-        const r = await db.query("SELECT * FROM  ingresso ");
+        const r = await db.query("SELECT * FROM  ingresso");
         if(!r.rowCount){
-            throw new Error ("ingresso não encontrado")
+            throw new Error("Ingressos não encontrados");
         }
         return res.status(200).json(r.rows);
     }catch(error){
@@ -27,7 +27,7 @@ router.get("/:id",async(req,res)=>{
         }
         const r = await db.query("SELECT * FROM ingresso WHERE id = $1",[id])
         if(!r.rowCount){
-            throw new Error("ingresso nao encontrado")
+            throw new Error("Ingresso não encontrado")
         }
         return res.status(200).json(r.rows[0]);
     }catch(error){
@@ -113,3 +113,6 @@ router.delete("/:id",async (req,res)=>{
         return res.status(400).json({msg:error.message});
     }
 })
+
+
+module.exports = router;

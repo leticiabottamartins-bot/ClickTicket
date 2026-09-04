@@ -1,5 +1,3 @@
-CREATE DATABASE clickTicket;
-
 CREATE TABLE atracao (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(60) NOT NULL,
@@ -43,7 +41,7 @@ CREATE TABLE show (
 CREATE TABLE usuario (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(60) NOT NULL,
-    cpf VARCHAR(11) NOT NULL,
+    cpf VARCHAR(14) NOT NULL,
     ano_nasc INT NOT NULL,
     email VARCHAR(100) NOT NULL,
     senha VARCHAR(80) NOT NULL,
@@ -58,10 +56,8 @@ CREATE TABLE usuario (
         CHECK (ano_nasc BETWEEN 1900 AND EXTRACT(YEAR FROM CURRENT_DATE)::INT),
 
     CONSTRAINT usuario_nome_ck
-        CHECK (TRIM(nome) <> ''),
+        CHECK (TRIM(nome) <> '')
 
-    CONSTRAINT usuario_cpf_ck
-        CHECK (cpf ~ '^[0-9]{11}$')
 );
 
 CREATE TABLE ingresso (

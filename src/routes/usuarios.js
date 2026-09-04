@@ -6,7 +6,7 @@ const router = express.Router();
 // gettar usuarios
 router.get("/", async (req, res) =>{
     try{    
-        const r = await db.query("SELECT nome, cpf, ano_nasc, email FROM usuario");
+        const r = await db.query("SELECT id, nome, cpf, ano_nasc, email FROM usuario");
         if (!r.rowCount){
             throw new Error("Usuários não encontrados :(")
         }
@@ -56,7 +56,7 @@ router.post("/", async (req,res) =>{
         }
         
         
-        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, email, senha) VALUES ($1, $2, $3, $4, $5) RETURNING *", [nome, cpf, ano_nasc, email, senha ]);
+        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, email, senha) VALUES ($1, $2, $3, $4, $5) RETURNING nome, cpf, ano_nasc, email", [nome, cpf, ano_nasc, email, senha ]);
         if (!r.rowCount){
             throw new Error("Erro ao cadastrar usuário")
         }
@@ -92,9 +92,9 @@ router.put("/:id", async (req,res) =>{
         }
 
 
-        const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, email=$4, senha=$5 WHERE id=$6 RETURNING *", [nome, cpf, ano_nasc, email, senha, id]);
+        const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, email=$4, senha=$5 WHERE id=$6 RETURNING id, nome, cpf, ano_nasc, email", [nome, cpf, ano_nasc, email, senha, id]);
         if (!r.rowCount){
-            throw new Error("Não foi possível editar o usuário :(")
+            throw new Error("Não foi possível editar o usuário: ele não existe")
         }
         return res.status(200).json({msg: "Usuário editado com sucesso!", usuario: r.rows[0]});
         
@@ -110,9 +110,10 @@ router.delete("/:id", async (req,res) =>{
         if (!id){
             throw new Error("Id inválido")
         }
-        const r = await db.query("DELETE FROM usuario WHERE id=$1", [id])
-        if(!r.rowCount){
-            throw new Error("Não foi possível deletar o usuário")
+        const r1 = await db.query("DELETE FROM ingresso WHERE usuario_id = $1", [id])
+        const r2 = await db.query("DELETE FROM usuario WHERE id=$1", [id])
+        if(!r2.rowCount){
+            throw new Error("Não foi possível deletar o usuário: ele não existe")
         }
         return res.status(200).json({msg:"Usuário deletado com sucesso!"});
         

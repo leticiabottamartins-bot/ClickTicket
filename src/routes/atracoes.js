@@ -1,28 +1,31 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../../db");
+const db = require("../db.js");
 
 
 router.get("/", async (req, res) => {
   try {
-    const r = await db.query("SELECT * FROM  atracoes;");
+    const r = await db.query("SELECT * FROM  atracao;");
+    if(!r.rowCount){
+      throw new Error("Nenhuma atração encontrada!")
+    }
     return res.status(200).json(r.rows)
   } catch (error) {
-    return res.status(400).json({ msg: error })
+    return res.status(404).json({ msg: error.message })
   }
 })
 
 router.get("/:id", async (req, res) => {
   try {
-    let id = req.params.id
-    const r = await db.query("SELECT * FROM atracoes WHERE id = $1", [id])
+    let id = req.params.id;
+    const r = await db.query("SELECT * FROM atracao WHERE id = $1", [id]);
     if (!r.rowCount) {
-      throw new Error("Atracao nao cadastrada")
+      throw new Error("Atração não cadastrada");
     } else {
-      return res.status(200).json(r.rows)
+      return res.status(200).json(r.rows[0]);
     }
   } catch (error) {
-    return res.status(400).json({ msg: error })
+    return res.status(404).json({ msg: error.message });
   }
 })
 
@@ -30,20 +33,23 @@ router.post("/", async (req, res) => {
   try {
     let nome = req.body.nome || {};
     let nacionalidade = req.body.nacionalidade || {};
+    let tipo = req.body.tipo || {};
     if (!nome || nome.length < 2) {
-      throw new Error("Nome incompleto")
+      throw new Error("Nome incompleto");
     } else if (!nacionalidade || nacionalidade.length < 2) {
-      throw new Error("Nacionalidade incompleta")
-    } else {
-      const r = await db.query("INSERT INTO atracoes (nome, nacionalidade) VALUES ($1, $2) RETURNING *", [nome, nacionalidade]);
+      throw new Error("Nacionalidade incompleta");
+    } else if (!tipo || tipo.length < 2){
+      throw new Error("Tipo incompleto");
+    }else {
+      const r = await db.query("INSERT INTO atracao (nome, nacionalidade, tipo) VALUES ($1, $2, $3) RETURNING *", [nome, nacionalidade, tipo]);
       if (!r.rowCount) {
-        throw new Error("Atração nao adicionada")
+        throw new Error("Atração não adicionada");
       } else {
-        return res.status(200).json(r.rows);
+        return res.status(201).json(r.rows[0]);
       }
     }
   } catch (error) {
-    return res.status(400).json({ msg: error })
+    return res.status(400).json({ msg: error.message })
   }
 })
 router.put("/:id", async (req, res) => {
@@ -51,20 +57,23 @@ router.put("/:id", async (req, res) => {
     let id = req.params.id;
     let nome = req.body.nome || {};
     let nacionalidade = req.body.nacionalidade || {};
+    let tipo = req.body.tipo || {};
     if (!nome || nome.length < 2) {
       throw new Error("Nome incompleto")
     } else if (!nacionalidade || nacionalidade.length < 2) {
       throw new Error("Nacionalidade incompleta")
-    } else {
-      const r = await db.query("UPDATE atracoes SET nome = $1, nacionalidade = $2 WHERE id = $3 RETURNING *"[nome, nacionalidade, id]);
+    } else if(!tipo || tipo.length < 2){
+      throw new Error("Tipo incompleto")
+    }else {
+      const r = await db.query("UPDATE atracao SET nome = $1, nacionalidade = $2, tipo = $3 WHERE id = $4 RETURNING *", [nome, nacionalidade, tipo,id]);
       if (!r.rowCount) {
-        throw new Error("Atracao nao editada")
+        throw new Error("Atração não editada")
       } else {
-        return res.status(200).json(r.rows)
+        return res.status(200).json(r.rows[0])
       }
     }
   } catch (error) {
-    return res.status(400).json({ msg: error })
+    return res.status(400).json({ msg: error.message })
   }
 })
 module.exports = router;

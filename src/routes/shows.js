@@ -113,3 +113,6 @@ router.delete ("/:id", async (req, res)=> {
         return res.status(400).json({msg: error.message})
     }
 });
+
+
+module.exports = router;
