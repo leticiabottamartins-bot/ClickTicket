@@ -29,6 +29,7 @@ CREATE TABLE show (
     nome VARCHAR(60) NOT NULL,
     data TIMESTAMPTZ NOT NULL,
     local_id INT NOT NULL,
+    genero VARCHAR(50),
 
     CONSTRAINT show_local_fk
         FOREIGN KEY (local_id)
@@ -43,6 +44,7 @@ CREATE TABLE usuario (
     nome VARCHAR(60) NOT NULL,
     cpf VARCHAR(14) NOT NULL,
     ano_nasc INT NOT NULL,
+    gosto VARCHAR(50),
     email VARCHAR(100) NOT NULL,
     senha VARCHAR(80) NOT NULL,
 
