@@ -6,7 +6,7 @@ const router = express.Router();
 // gettar usuarios
 router.get("/", async (req, res) =>{
     try{    
-        const r = await db.query("SELECT id, nome, cpf, ano_nasc, email FROM usuario");
+        const r = await db.query("SELECT id, nome, cpf, ano_nasc, gosto, email FROM usuario");
         if (!r.rowCount){
             throw new Error("Usuários não encontrados")
         }
@@ -24,7 +24,7 @@ router.get("/:id", async (req, res) =>{
         if (!Number.isInteger(id)){
             throw new Error("ID inválido")
         }
-        const r = await db.query("SELECT nome, cpf, ano_nasc, email FROM usuario WHERE id = $1", [id]);
+        const r = await db.query("SELECT nome, cpf, ano_nasc, gosto, email FROM usuario WHERE id = $1", [id]);
         if (!r.rowCount){
             throw new Error("Usuário não encontrado")
         }
@@ -38,8 +38,8 @@ router.get("/:id", async (req, res) =>{
 //postar usuario
 router.post("/", async (req,res) =>{
     try {
-        const {nome, cpf, ano_nasc, email, senha, generoMusical} = req.body || {};
-        if (!nome || !cpf || !ano_nasc || !email || !senha || !generoMusical){
+        const {nome, cpf, ano_nasc, gosto, email, senha} = req.body || {};
+        if (!nome || !cpf || !ano_nasc || !email || !senha){
             throw new Error("Parâmetros inválidos")
         }
         if (nome.length < 2){
@@ -59,7 +59,7 @@ router.post("/", async (req,res) =>{
         }
         
         
-        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, email, senha, genero_musical_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING nome, cpf, ano_nasc, email, genero_musical_id", [nome, cpf, ano_nasc, email, senha, generoMusical ]);
+        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, gosto_id, email, senha) VALUES ($1, $2, $3, $4, $5, $6) RETURNING nome, cpf, ano_nasc, gosto_id, email", [nome, cpf, ano_nasc, gosto, email, senha ]);
         if (!r.rowCount){
             throw new Error("Erro ao cadastrar usuário")
         }
@@ -74,9 +74,11 @@ router.post("/", async (req,res) =>{
 router.put("/:id", async (req,res) =>{
     try {
         const id = req.params.id;
-        const {nome, cpf, ano_nasc, email, senha, generoMusical} = req.body || {};
+
+
+        const {nome, cpf, ano_nasc, gosto, email, senha} = req.body || {};
         if (!Number.isInteger(id)){
-            throw new Error("ID inválido")
+            throw new Error("Id inválido")
         }
         if (!nome || !cpf || !ano_nasc || !email || !senha){
             throw new Error("Parâmetros inválidos")
@@ -98,7 +100,7 @@ router.put("/:id", async (req,res) =>{
         }
 
 
-        const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, email=$4, senha=$5, genero_musical_id = $6 WHERE id=$7 RETURNING id, nome, cpf, ano_nasc, email, genero_musical_id", [nome, cpf, ano_nasc, email, senha, generoMusical, id]);
+        const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, gosto_id=$4, email=$5, senha=$6 WHERE id=$7 RETURNING id, nome, cpf, ano_nasc, gosto_id, email", [nome, cpf, ano_nasc, gosto, email, senha, id]);
         if (!r.rowCount){
             throw new Error("Não foi possível editar o usuário: ele não existe")
         }
@@ -127,6 +129,42 @@ router.delete("/:id", async (req,res) =>{
          return res.status(400).json({msg:error.message});
     }
 });
+
+//recomendar shows para o usuario
+router.get("/:id/recomendacoes", async (req, res) => {
+    try {
+        const id = req.params.id;
+        if(!id){
+            throw new Error("Id inválido")
+        }
+        const usuario = await db.query("SELECT gosto FROM usuario WHERE id=$1", [id]);
+        if (!usuario.rowCount){
+            throw new Error("Usuário não encontrado")
+        }
+        const gosto = usuario.rows[0].gosto;
+        if (!gosto){
+            throw new Error("Usuário não possui um gosto cadastrado")
+        }
+        const shows = await db.query("SELECT s.nome, s.data, l.nome, l.endereco FROM show s INNER JOIN local l ON s.local_id = l.id WHERE s.genero = $1", [gosto]);
+        if (!shows.rowCount){
+            throw new Error("Nenhum show encontrado para esse gosto")
+        }
+        return res.status(200).json({gosto: gosto, shows: shows.rows});
+
+
+    } catch (error) {
+        return res.status(400).json({msg:error.message});
+    }
+});
+
+//recomendar shows q ocorrerao em tres meses
+router.get("/embreve", async (req, res)=> {
+    try{
+        
+    }catch(error) {
+
+    }
+})
 
 
 module.exports = router;

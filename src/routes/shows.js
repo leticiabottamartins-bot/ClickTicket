@@ -1,5 +1,4 @@
 const express = require("express");
-
 const router = express.Router();
 const db = require("../db");
 
@@ -34,6 +33,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
     try {
         const { nome, data, horario} = req.body || {}
+        const genero = req.body.genero || {};
         const [dia, mes, ano] = data.split("/");
         const [hora, minuto] = horario.split(":");
         const dataRecebida = new Date(

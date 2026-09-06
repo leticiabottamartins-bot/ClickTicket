@@ -16,7 +16,7 @@ CREATE TABLE atracao (
     nome VARCHAR(60) NOT NULL,
     nacionalidade VARCHAR(30),
     tipo VARCHAR(30),
-    genero_musical_id INT NOT NULL,,
+    genero_musical_id INT NOT NULL,
 
     CONSTRAINT atracao_nome_ck
         CHECK (TRIM(nome) <> ''),
@@ -46,6 +46,7 @@ CREATE TABLE show (
     nome VARCHAR(60) NOT NULL,
     data TIMESTAMPTZ NOT NULL,
     local_id INT NOT NULL,
+    genero VARCHAR(50),
 
     CONSTRAINT show_local_fk
         FOREIGN KEY (local_id)
@@ -60,9 +61,9 @@ CREATE TABLE usuario (
     nome VARCHAR(60) NOT NULL,
     cpf VARCHAR(14) NOT NULL,
     ano_nasc INT NOT NULL,
+    gosto_id INT,
     email VARCHAR(100) NOT NULL,
-    senha VARCHAR(80) NOT NULL,
-    genero_musical_id INT NOT NULL,
+    senha VARCHAR(80) NOT NULL
 
     CONSTRAINT usuario_cpf_uq
         UNIQUE (cpf),
@@ -75,8 +76,8 @@ CREATE TABLE usuario (
 
     CONSTRAINT usuario_nome_ck
         CHECK (TRIM(nome) <> ''),
-    CONSTRAINT usuario_genero_musical_fk
-    FOREIGN KEY (genero_musical_id)
+    CONSTRAINT usuario_gosto_id_fk
+    FOREIGN KEY (gosto_id)
     REFERENCES genero_musical(id)
 
 );

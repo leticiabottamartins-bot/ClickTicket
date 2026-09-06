@@ -8,7 +8,7 @@ router.get("/", async (req,res) =>{
     try {
         const r = await db.query("SELECT * FROM local")
         if (!r.rowCount){
-            throw new Error("Locais não encontrados")
+            throw new Error("Locais não encontrados :(")
         }
         return res.status(200).json(r.rows);
         
