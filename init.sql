@@ -1,13 +1,28 @@
-CREATE DATABASE clickTicket;
+--CRIAÇÕES
+CREATE TABLE genero_musical (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
+
+    CONSTRAINT genero_musical_nome_uq
+        UNIQUE (nome),
+
+    CONSTRAINT genero_musical_nome_ck
+        CHECK (TRIM(nome) <> '')
+);
+
 
 CREATE TABLE atracao (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(60) NOT NULL,
     nacionalidade VARCHAR(30),
     tipo VARCHAR(30),
+    genero_musical_id INT NOT NULL,,
 
     CONSTRAINT atracao_nome_ck
-        CHECK (TRIM(nome) <> '')
+        CHECK (TRIM(nome) <> ''),
+    CONSTRAINT atracao_genero_musical_fk
+    FOREIGN KEY (genero_musical_id)
+    REFERENCES genero_musical(id)
 );
 
 CREATE TABLE local (
@@ -43,10 +58,11 @@ CREATE TABLE show (
 CREATE TABLE usuario (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(60) NOT NULL,
-    cpf VARCHAR(11) NOT NULL,
+    cpf VARCHAR(14) NOT NULL,
     ano_nasc INT NOT NULL,
     email VARCHAR(100) NOT NULL,
     senha VARCHAR(80) NOT NULL,
+    genero_musical_id INT NOT NULL,
 
     CONSTRAINT usuario_cpf_uq
         UNIQUE (cpf),
@@ -59,9 +75,10 @@ CREATE TABLE usuario (
 
     CONSTRAINT usuario_nome_ck
         CHECK (TRIM(nome) <> ''),
+    CONSTRAINT usuario_genero_musical_fk
+    FOREIGN KEY (genero_musical_id)
+    REFERENCES genero_musical(id)
 
-    CONSTRAINT usuario_cpf_ck
-        CHECK (cpf ~ '^[0-9]{11}$')
 );
 
 CREATE TABLE ingresso (
@@ -104,3 +121,30 @@ CREATE TABLE show_atracao (
         REFERENCES atracao(id)
         ON DELETE CASCADE
 );    
+--INSERÇÕES
+INSERT INTO genero_musical (nome) VALUES
+('Rock'),
+('Pop'),
+('Sertanejo'),
+('Samba'),
+('Pagode'),
+('Funk'),
+('Rap'),
+('Trap'),
+('MPB'),
+('Forró'),
+('Piseiro'),
+('Axé'),
+('Reggae'),
+('Eletrônica'),
+('Jazz'),
+('Blues'),
+('R&B'),
+('Soul'),
+('Gospel'),
+('Bossa Nova'),
+('Metal'),
+('Punk Rock'),
+('Indie'),
+('K-pop'),
+('Reggaeton');

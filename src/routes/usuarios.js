@@ -6,9 +6,9 @@ const router = express.Router();
 // gettar usuarios
 router.get("/", async (req, res) =>{
     try{    
-        const r = await db.query("SELECT nome, cpf, ano_nasc, email FROM usuario");
+        const r = await db.query("SELECT id, nome, cpf, ano_nasc, email FROM usuario");
         if (!r.rowCount){
-            throw new Error("Usuários não encontrados :(")
+            throw new Error("Usuários não encontrados")
         }
         return res.status(200).json(r.rows);
 
@@ -21,12 +21,12 @@ router.get("/", async (req, res) =>{
 router.get("/:id", async (req, res) =>{
     try{    
         const id = req.params.id;
-        if (!id){
-            throw new Error("Id inválido")
+        if (!Number.isInteger(id)){
+            throw new Error("ID inválido")
         }
         const r = await db.query("SELECT nome, cpf, ano_nasc, email FROM usuario WHERE id = $1", [id]);
         if (!r.rowCount){
-            throw new Error("Usuário não encontrado :(")
+            throw new Error("Usuário não encontrado")
         }
         return res.status(200).json(r.rows[0]);
 
@@ -38,8 +38,8 @@ router.get("/:id", async (req, res) =>{
 //postar usuario
 router.post("/", async (req,res) =>{
     try {
-        const {nome, cpf, ano_nasc, email, senha} = req.body || {};
-        if (!nome || !cpf || !ano_nasc || !email || !senha){
+        const {nome, cpf, ano_nasc, email, senha, generoMusical} = req.body || {};
+        if (!nome || !cpf || !ano_nasc || !email || !senha || !generoMusical){
             throw new Error("Parâmetros inválidos")
         }
         if (nome.length < 2){
@@ -54,9 +54,12 @@ router.post("/", async (req,res) =>{
         if (!email.includes("@") || !email.includes(".com")){
             throw new Error("Email inválido")
         }
+        if (!Number.isInteger(generoMusical)) {
+            throw new Error ("ID do genero musical inválido")
+        }
         
         
-        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, email, senha) VALUES ($1, $2, $3, $4, $5) RETURNING *", [nome, cpf, ano_nasc, email, senha ]);
+        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, email, senha, genero_musical_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING nome, cpf, ano_nasc, email, genero_musical_id", [nome, cpf, ano_nasc, email, senha, generoMusical ]);
         if (!r.rowCount){
             throw new Error("Erro ao cadastrar usuário")
         }
@@ -71,9 +74,9 @@ router.post("/", async (req,res) =>{
 router.put("/:id", async (req,res) =>{
     try {
         const id = req.params.id;
-        const {nome, cpf, ano_nasc, email, senha} = req.body || {};
-        if (!id){
-            throw new Error("Id inválido")
+        const {nome, cpf, ano_nasc, email, senha, generoMusical} = req.body || {};
+        if (!Number.isInteger(id)){
+            throw new Error("ID inválido")
         }
         if (!nome || !cpf || !ano_nasc || !email || !senha){
             throw new Error("Parâmetros inválidos")
@@ -90,11 +93,14 @@ router.put("/:id", async (req,res) =>{
         if (!email.includes("@") || !email.includes(".com")){
             throw new Error("Email inválido")
         }
+        if (!Number.isInteger(generoMusical)) {
+            throw new Error ("ID do gênero musical inválido")
+        }
 
 
-        const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, email=$4, senha=$5 WHERE id=$6 RETURNING *", [nome, cpf, ano_nasc, email, senha, id]);
+        const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, email=$4, senha=$5, genero_musical_id = $6 WHERE id=$7 RETURNING id, nome, cpf, ano_nasc, email, genero_musical_id", [nome, cpf, ano_nasc, email, senha, generoMusical, id]);
         if (!r.rowCount){
-            throw new Error("Não foi possível editar o usuário :(")
+            throw new Error("Não foi possível editar o usuário: ele não existe")
         }
         return res.status(200).json({msg: "Usuário editado com sucesso!", usuario: r.rows[0]});
         
@@ -110,9 +116,10 @@ router.delete("/:id", async (req,res) =>{
         if (!id){
             throw new Error("Id inválido")
         }
-        const r = await db.query("DELETE FROM usuario WHERE id=$1", [id])
-        if(!r.rowCount){
-            throw new Error("Não foi possível deletar o usuário")
+        const r1 = await db.query("DELETE FROM ingresso WHERE usuario_id = $1", [id])
+        const r2 = await db.query("DELETE FROM usuario WHERE id=$1", [id])
+        if(!r2.rowCount){
+            throw new Error("Não foi possível deletar o usuário: ele não existe")
         }
         return res.status(200).json({msg:"Usuário deletado com sucesso!"});
         

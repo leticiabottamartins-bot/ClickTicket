@@ -7,7 +7,7 @@ router.get("/", async (req, res) => {
     try {
         const r = await db.query("SELECT * FROM show;");
         if (!r.rowCount) {
-            throw new Error("Shows nao encontrados")
+            throw new Error("Shows não encontrados")
         }
         return res.status(200).json(r.rows)
     } catch (error) {
@@ -23,9 +23,9 @@ router.get("/:id", async (req, res) => {
         }
         const r = await db.query("SELECT * FROM show WHERE id = $1", [id])
         if (!r.rowCount) {
-            throw new Error("Show com este id nao encontrado")
+            throw new Error("Show com este ID não encontrado")
         }
-        return res.status(200).json(r.rows)
+        return res.status(200).json(r.rows[0])
     } catch (error) {
         return res.status(404).json({ msg: error.message })
     }
@@ -33,9 +33,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try {
-        const nome = req.body.nome;
-        const data = req.body.data;
-        const horario = req.body.horario;
+        const { nome, data, horario} = req.body || {}
         const [dia, mes, ano] = data.split("/");
         const [hora, minuto] = horario.split(":");
         const dataRecebida = new Date(
@@ -60,8 +58,12 @@ router.post("/", async (req, res) => {
         if (!r1.rowCount) {
             throw new Error("Local não existe");
         } else {
-            const r2 = await db.query("INSERT INTO show (nome, data, local_id) VALUES ($1, $2, $3) RETURNING *", [nome, dataRecebida.toISOString(), local_id])
-            return res.status(200).json({ msg: "Show adicionado", nome: r2.rows[[0]] })
+            const r2 = await db.query ("SELECT * FROM show WHERE local_id = $1 AND data = $2", [local_id, dataRecebida.toISOString()]);
+            if (r2.rowCount) {
+                throw new Error ("Um show já acontecerá nessa mesmo local e data.")
+            }
+            const r3 = await db.query("INSERT INTO show (nome, data, local_id) VALUES ($1, $2, $3) RETURNING *", [nome, dataRecebida.toISOString(), local_id])
+            return res.status(200).json({ msg: "Show adicionado", nome: r3.rows[[0]] })
         }
 
 
@@ -102,11 +104,15 @@ router.put("/:id", async (req, res) => {
         if (!r1.rowCount) {
             throw new Error("Local não existe");
         } else {
-            const r2 = await db.query("UPDATE show SET nome = $1, data = $2, local_id = $3 WHERE id = $4", [nome, dataRecebida.toISOString(), local_id, id])
-            if (!r2.rowCount) {
+            const r2 = await db.query ("SELECT * FROM show WHERE local_id = $1 AND data = $2", [local_id, dataRecebida.toISOString()]);
+            if (r2.rowCount) {
+                throw new Error ("Um show já acontecerá nessa mesmo local e data.")
+            }
+            const r3 = await db.query("UPDATE show SET nome = $1, data = $2, local_id = $3 WHERE id = $4", [nome, dataRecebida.toISOString(), local_id, id])
+            if (!r3.rowCount) {
                 throw new Error ("Nao foi possivel alterar o show")
             }
-            return res.status(200).json({ msg: "Show adicionado", show: r2.rows[0] })
+            return res.status(200).json({ msg: "Show adicionado", show: r3.rows[0] })
         }
 
 
@@ -123,7 +129,7 @@ router.delete("/:id", async (req, res) => {
         }
         const r = await db.query("DELETE FROM show WHERE id = $1 ", [id]);
         if (!r.rowCount) {
-            throw new Error("Show ja nao existe")
+            throw new Error("Show não existe")
         }
         return res.status(200).json({ msg: "Show deletado!" })
     } catch (error) {
