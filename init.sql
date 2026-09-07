@@ -85,23 +85,40 @@ CREATE TABLE usuario (
 CREATE TABLE ingresso (
     id SERIAL PRIMARY KEY,
     usuario_id INT NOT NULL,
-    show_id INT NOT NULL,
-    tipo VARCHAR(25) NOT NULL,
-    preco NUMERIC(10,2) NOT NULL,
+    lote_id INT NOT NULL,
+    preco_pago NUMERIC(10,2) NOT NULL,
     data_compra TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT ingresso_usuario_fk
         FOREIGN KEY (usuario_id)
         REFERENCES usuario(id),
 
-    CONSTRAINT ingresso_show_fk
+    CONSTRAINT ingresso_lote_fk
+        FOREIGN KEY (lote_id)
+        REFERENCES lote_ingresso(id),
+
+    CONSTRAINT ingresso_preco_pago_ck
+        CHECK (preco_pago >= 0)
+);
+
+CREATE TABLE lote_ingresso (
+    id SERIAL PRIMARY KEY,
+    show_id INT NOT NULL,
+    tipo VARCHAR(25) NOT NULL,
+    preco NUMERIC(10,2) NOT NULL,
+    quantidade INT NOT NULL,
+
+    CONSTRAINT lote_ingresso_show_fk
         FOREIGN KEY (show_id)
         REFERENCES show(id),
 
-    CONSTRAINT ingresso_preco_ck
+    CONSTRAINT lote_ingresso_preco_ck
         CHECK (preco >= 0),
 
-    CONSTRAINT ingresso_tipo_ck
+    CONSTRAINT lote_ingresso_quantidade_ck
+        CHECK (quantidade >= 0),
+
+    CONSTRAINT lote_ingresso_tipo_ck
         CHECK (TRIM(tipo) <> '')
 );
 

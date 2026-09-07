@@ -137,4 +137,24 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
+//recomendar shows q ocorrerao em tres meses
+router.get("/embreve", async (req, res)=> {
+    try{
+        const id= Number(req.params.id)
+        if (!Number.isInteger(id)) {
+            throw new Error ("ID inválido")
+        }
+        const r = await db.query ("SELECT * FROM show WHERE data BETWEEN CURRENT TIME_STAMP AND CURRENT TIME_STAMP + INTERVAL '3 months'")
+        if (!r.rowCount) {
+            throw new Error ("Nenhum show nos próximos três meses")
+        }
+        return res.status(200).json(r.rows)
+    }catch(error) {
+        return res.status(400).json({msg: error.message})
+    }
+})
+
+//shows mais populares
+
+//faturamento de um show
 module.exports = router;

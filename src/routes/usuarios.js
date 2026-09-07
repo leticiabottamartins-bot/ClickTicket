@@ -157,14 +157,7 @@ router.get("/:id/recomendacoes", async (req, res) => {
     }
 });
 
-//recomendar shows q ocorrerao em tres meses
-router.get("/embreve", async (req, res)=> {
-    try{
-        
-    }catch(error) {
 
-    }
-})
 
 
 module.exports = router;
