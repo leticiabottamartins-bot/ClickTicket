@@ -16,6 +16,33 @@ router.get("/", async (req, res) => {
     }
 });
 
+
+
+// retorna locais os quais tem shows associados
+router.get("/comshow", async (req, res) => {
+    try {
+        const r = await db.query(`
+            SELECT 
+                l.id AS local_id,
+                l.nome AS local_nome,
+                l.endereco AS local_endereco,
+                l.capacidade AS local_capacidade,
+                s.id AS show_id,
+                s.nome AS show_nome,
+                s.data AS show_data
+            FROM local l
+            INNER JOIN show s ON s.local_id = l.id
+        `);
+        if (!r.rowCount) {
+            throw new Error("Nenhum local com show atribuído")
+        }
+        return res.status(200).json(r.rows);
+    } catch (error) {
+        return res.status(404).json({ msg: error.message });
+    }
+});
+
+
 // gettar local por id
 router.get("/:id", async (req, res) => {
     try {
@@ -93,6 +120,8 @@ router.put("/:id", async (req, res) => {
 });
 
 
+
+
 // deletar local
 router.delete("/:id", async (req, res) => {
     try {
@@ -117,6 +146,9 @@ router.delete("/:id", async (req, res) => {
     }
 
 });
+
+
+
 
 
 module.exports = router;

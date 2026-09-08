@@ -27,6 +27,28 @@ router.get("/embreve", async (req, res) => {
     }
 })
 
+
+//shows mais populares
+router.get("/populares", async (req, res) => {
+    try {
+        const r = await db.query(`
+            SELECT s.id, s.nome, s.data, COUNT(i.id) AS total_ingressos
+            FROM show s
+            JOIN lote_ingresso l ON l.show_id = s.id
+            JOIN ingresso i ON i.lote_id = l.id
+            GROUP BY s.id, s.nome, s.data
+            ORDER BY total_ingressos DESC
+        `);
+        if (!r.rowCount) {
+            throw new Error("Nenhum show com ingressos vendidos ainda")
+        }
+        return res.status(200).json(r.rows)
+    } catch (error) {
+        return res.status(404).json({ msg: error.message })
+    }
+})
+
+
 router.get("/:id", async (req, res) => {
     try {
         const id = Number(req.params.id);
@@ -175,11 +197,32 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-//shows mais populares
 
 //faturamento de um show
+router.get("/faturamento/:id", async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new Error("ID invalido")
+        }
 
+        const rShow = await db.query("SELECT * FROM show WHERE id = $1", [id]);
+        if (!rShow.rowCount) {
+            throw new Error("Show com este ID não encontrado")
+        }
 
+        const r = await db.query(`
+            SELECT COALESCE(SUM(i.preco_pago), 0) AS faturamento
+            FROM ingresso i
+            JOIN lote_ingresso l ON l.id = i.lote_id
+            WHERE l.show_id = $1
+        `, [id]);
+
+        return res.status(200).json({show: rShow.rows[0].nome,faturamento: r.rows[0].faturamento})
+    } catch (error) {
+        return res.status(404).json({ msg: error.message })
+    }
+})
 
 
 module.exports = router;
