@@ -33,39 +33,24 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { nome, nacionalidade, tipo, genero_musical_id} = req.body || {}
-
+    let { nome, nacionalidade, tipo, genero_musical_id } = req.body || {}
+    genero_musical_id = Number(genero_musical_id)
     if (!nome || nome.length < 2) {
-      throw new Error("Nome incompleto" );
+      throw new Error("Nome incompleto");
     } else if (!nacionalidade || nacionalidade.length < 2) {
-      throw new Error("Nacionalidade incompleta" );
+      throw new Error("Nacionalidade incompleta");
     } else if (!tipo || tipo.length < 2) {
-      throw new Error("Tipo incompleto" );
-    } else if (!Number.isInteger(Number(genero_musical_id))) {
-      throw new Error("ID do Gênero musical inválido" );
+      throw new Error("Tipo incompleto");
+    } else if (!Number.isInteger(genero_musical_id)) {
+      throw new Error("ID do Gênero musical inválido");
     } else {
       const r = await db.query("INSERT INTO atracao (nome, nacionalidade, tipo, genero_musical_id) VALUES ($1, $2, $3, $4) RETURNING *", [nome, nacionalidade, tipo, genero_musical_id]);
       if (!r.rowCount) {
         throw new Error("Atração não adicionada");
       } else {
-        return res.status(201).json({msg: "Uhuuul, atração adicionada!", atracao: r.rows[0]});
+        return res.status(201).json({ msg: "Uhuuul, atração adicionada!", atracao: r.rows[0] });
       }
     }
-    if (!nacionalidade || nacionalidade.length < 2) {
-      throw new Error("Nacionalidade incompleta");
-    }
-    if (!tipo || tipo.length < 2) {
-      throw new Error("Tipo incompleto");
-    }
-    if (!Number.isInteger(generoMusical)) {
-      throw new Error("ID do Gênero musical inválido");
-    }
-
-    const r = await db.query("INSERT INTO atracao (nome, nacionalidade, tipo, genero_musical_id) VALUES ($1, $2, $3, $4) RETURNING *", [nome, nacionalidade, tipo, generoMusical]);
-    if (!r.rowCount) {
-      throw new Error("Atração não adicionada");
-    }
-    return res.status(201).json({ msg: "Uhuuul, atração adicionada!", atracao: r.rows[0] });
   } catch (error) {
     return res.status(400).json({ msg: error.message })
   }
@@ -73,39 +58,35 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    let id = req.params.id;
-    let { nome, nacionalidade, tipo, genero_musical_id} = req.body || {}
+    const id = Number(req.params.id);
+    let { nome, nacionalidade, tipo, genero_musical_id } = req.body || {}
+    genero_musical_id = Number(genero_musical_id)
     if (!nome || nome.length < 2) {
       throw new Error("Nome incompleto")
     } else if (!nacionalidade || nacionalidade.length < 2) {
       throw new Error("Nacionalidade incompleta")
     } else if (!tipo || tipo.length < 2) {
       throw new Error("Tipo incompleto")
-    }else if (!Number.isInteger(Number(genero_musical_id))){
-      throw new Error ("ID do gênero musical inválido")
+    } else if (!Number.isInteger(genero_musical_id)) {
+      throw new Error("ID do gênero musical inválido")
+    } else if (!Number.isInteger(id)) {
+      throw new Error("ID da atracão inválida")
     } else {
-      const r = await db.query("UPDATE atracao SET nome = $1, nacionalidade = $2, tipo = $3, genero_musical_id = $4 WHERE id = $5 RETURNING *", [nome, nacionalidade, tipo,genero_musical_id, id]);
+      const r1 = await db.query(
+        "SELECT * FROM genero_musical WHERE id = $1",
+        [genero_musical_id]
+      );
+
+      if (!r1.rowCount) {
+        throw new Error("Gênero musical não existe");
+      }
+      const r = await db.query("UPDATE atracao SET nome = $1, nacionalidade = $2, tipo = $3, genero_musical_id = $4 WHERE id = $5 RETURNING *", [nome, nacionalidade, tipo, genero_musical_id, id]);
       if (!r.rowCount) {
         throw new Error("Atração não editada")
       } else {
-        return res.status(200).json({msg: "Uhuul, atração editada!", atracao: r.rows[0]})
+        return res.status(200).json({ msg: "Uhuul, atração editada!", atracao: r.rows[0] })
       }
     }
-    if (!nacionalidade || nacionalidade.length < 2) {
-      throw new Error("Nacionalidade incompleta")
-    }
-    if (!tipo || tipo.length < 2) {
-      throw new Error("Tipo incompleto")
-    }
-    if (!Number.isInteger(generoMusical)) {
-      throw new Error("ID do gênero musical inválido")
-    }
-
-    const r = await db.query("UPDATE atracao SET nome = $1, nacionalidade = $2, tipo = $3, genero_musical_id = $4 WHERE id = $5 RETURNING *", [nome, nacionalidade, tipo, generoMusical, id]);
-    if (!r.rowCount) {
-      throw new Error("Atração não editada")
-    }
-    return res.status(200).json({ msg: "Uhuul, atração editada!", atracao: r.rows[0] })
   } catch (error) {
     return res.status(400).json({ msg: error.message })
   }

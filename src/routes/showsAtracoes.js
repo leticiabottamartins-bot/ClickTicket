@@ -13,10 +13,10 @@ router.get("/", async (req, res) => {
         for (const linha of r.rows) {
             let show = shows.find(s => s.id_show == linha.show_id);
             if (!show) {
-                show = {id_show: linha.show_id,nome_show: linha.show_nome,atracoes: []}
+                show = { id_show: linha.show_id, nome_show: linha.show_nome, atracoes: [] }
                 shows.push(show)
             }
-            show.atracoes.push({id: linha.atracao_id,nome: linha.atracao_nome})
+            show.atracoes.push({ id: linha.atracao_id, nome: linha.atracao_nome })
         }
         return res.status(200).json(shows)
     } catch (error) {
@@ -37,7 +37,7 @@ router.get("/:id", async (req, res) => {
         }
         let atracoes = [];
         for (const linha of r.rows) {
-            const atracao = {id: linha.atracao_id,nome: linha.atracao_nome}
+            const atracao = { id: linha.atracao_id, nome: linha.atracao_nome }
             atracoes.push(atracao)
         }
 
@@ -50,9 +50,9 @@ router.get("/:id", async (req, res) => {
 //add atracoes a um show
 router.post("/", async (req, res) => {
     try {
-        const { showId, atracaoId } = req.body || {}
-        atracaoId = Number (atracaoId)
-        showId = Number (showId)
+        let { showId, atracaoId } = req.body || {}
+        atracaoId = Number(atracaoId)
+        showId = Number(showId)
         if (!Number.isInteger(showId)) {
             throw new Error("ID do show inválido");
         }
@@ -64,9 +64,14 @@ router.post("/", async (req, res) => {
         if (!r1.rowCount) {
             throw new Error("Show nao encontrado")
         }
-        const r2 = await db.query("SELECT show_id FROM show_atracao sa JOIN show s ON s.id = sa.show_id WHERE sa.atracao_id = $1 AND s.data = $2 AND sa.show_id <> $3", [atracaoIdNum, r1.rows[0].data, showIdNum])
+        const r2 = await db.query("SELECT show_id FROM show_atracao sa JOIN show s ON s.id = sa.show_id WHERE sa.atracao_id = $1 AND s.data = $2 AND sa.show_id <> $3", [atracaoId, r1.rows[0].data, showId])
         if (r2.rowCount) {
             throw new Error("Atração já está em um show nessa mesma data e horário")
+        }
+        const existe = await db.query("SELECT * FROM show_atracao WHERE show_id = $1 AND atracao_id = $2", [showId, atracaoId]);
+
+        if (existe.rowCount) {
+            throw new Error("Essa atração já está nesse show");
         }
         const r3 = await db.query("INSERT INTO show_atracao (show_id, atracao_id) VALUES ($1, $2) RETURNING *", [showId, atracaoId]);
         if (!r3.rowCount) {
@@ -90,7 +95,7 @@ router.put("/:showId/:atracaoIdVelha", async (req, res) => {
         if (!Number.isInteger(atracaoIdVelha)) {
             throw new Error("ID da atracao invalido")
         }
-        const atracaoId = Number(req.body.atracaoId) ;
+        const atracaoId = Number(req.body.atracaoId);
         if (!Number.isInteger(atracaoId)) {
             throw new Error("ID da atração nova invalido")
         }
@@ -101,6 +106,11 @@ router.put("/:showId/:atracaoIdVelha", async (req, res) => {
         const r2 = await db.query("SELECT show_id FROM show_atracao sa JOIN show s ON s.id = sa.show_id WHERE sa.atracao_id = $1 AND s.data = $2 AND sa.show_id <> $3", [atracaoId, r1.rows[0].data, showId])
         if (r2.rowCount) {
             throw new Error("Atração já está em um show nessa mesma data e horário")
+        }
+        const existe = await db.query("SELECT * FROM show_atracao WHERE show_id = $1 AND atracao_id = $2", [showId, atracaoId]);
+
+        if (existe.rowCount) {
+            throw new Error("Essa atração já está nesse show");
         }
         const r3 = await db.query("UPDATE show_atracao SET atracao_id = $1 WHERE show_id = $2 AND atracao_id = $3 RETURNING *",
             [atracaoId, showId, atracaoIdVelha])
