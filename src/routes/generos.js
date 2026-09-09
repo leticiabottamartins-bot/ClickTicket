@@ -1,5 +1,5 @@
-const express = require ("express");
-const db =  require ("../db");
+const express = require("express");
+const db = require("../db");
 const router = express.Router();
 
 router.get ("/", async (req, res)=> {
@@ -11,19 +11,20 @@ router.get ("/", async (req, res)=> {
     }
 })
 
-router.get ("/:id", async (req,res)=> {
+router.get("/:id", async (req, res) => {
     try {
-        const id =  Number(req.params.id)
-        if (!Number.isInteger(id)){
-            throw new Error ("ID do gênero inválido")
+        const id = Number(req.params.id)
+        if (!Number.isInteger(id)) {
+            throw new Error("ID do gênero inválido")
         }
-        const r = await db.query ("SELECT * FROM genero_musical WHERE id = $1", [id])
+        const r = await db.query("SELECT * FROM genero_musical WHERE id = $1", [id])
         if (!r.rowCount) {
-            throw new Error ("Genero com esse ID nâo encontrado")
+            throw new Error("Gênero musical não encontrado")
         }
+
         return res.status(200).json(r.rows[0])
-    }catch(error) {
-        return res.status(400).json({msg: error.message})
+    } catch (error) {
+        return res.status(400).json({ msg: error.message })
     }
 })
 

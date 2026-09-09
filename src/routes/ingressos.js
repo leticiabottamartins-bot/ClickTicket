@@ -2,11 +2,16 @@ const express = require('express');
 const db = require("../db");
 const router = express.Router();
 
+const SELECT_INGRESSO = `SELECT i.id, i.usuario_id, u.nome AS nome_usuario, s.nome AS nome_show, i.lote_id, li.tipo, li.preco
+    FROM ingresso i
+    JOIN lote_ingresso li ON li.id = i.lote_id
+    JOIN show s ON s.id = li.show_id
+    JOIN usuario u ON u.id = i.usuario_id`;
 
 //gettar ingresos
 router.get("/", async (req, res) => {
     try {
-        const r = await db.query("SELECT i.id, i.usuario_id, u.nome AS nome_usuario, s.nome AS nome_show, i.lote_id, li.tipo, li.preco  FROM  ingresso i JOIN lote_ingresso li ON li.id = i.lote_id JOIN show s ON s.id = li.show_id JOIN usuario u ON u.id = i.usuario_id");
+        const r = await db.query(SELECT_INGRESSO);
         if (!r.rowCount) {
             throw new Error("Ingressos não encontrados");
         }
@@ -18,14 +23,13 @@ router.get("/", async (req, res) => {
 
 
 //gettar ingresso por id
-
 router.get("/:id", async (req, res) => {
     try {
         const id = Number(req.params.id);
         if (!Number.isInteger(id)) {
             throw new Error("ID do ingresso invalido")
         }
-        const r = await db.query("SELECT i.id, i.usuario_id, u.nome AS nome_usuario, s.nome AS nome_show, i.lote_id, li.tipo, li.preco  FROM  ingresso i JOIN lote_ingresso li ON li.id = i.lote_id JOIN show s ON s.id = li.show_id JOIN usuario u ON u.id = i.usuario_id WHERE i.id = $1", [id])
+        const r = await db.query(`${SELECT_INGRESSO} WHERE i.id = $1`, [id])
         if (!r.rowCount) {
             throw new Error("Ingresso não encontrado")
         }
@@ -34,6 +38,7 @@ router.get("/:id", async (req, res) => {
         return res.status(404).json({ msg: error.message })
     }
 })
+
 //postar ingresso
 router.post("/", async (req, res) => {
     try {
@@ -78,38 +83,17 @@ router.post("/", async (req, res) => {
         if (!r3.rowCount) {
             throw new Error("Não foi possível comprar o ingresso");
         }
-
-        const r4 = await db.query(
-            `SELECT 
-                i.id,
-                i.usuario_id,
-                u.nome AS nome_usuario,
-                s.id AS show_id,
-                s.nome AS nome_show,
-                i.lote_id,
-                li.tipo,
-                li.preco,
-                i.data_compra
-             FROM ingresso i
-             JOIN usuario u ON u.id = i.usuario_id
-             JOIN lote_ingresso li ON li.id = i.lote_id
-             JOIN show s ON s.id = li.show_id
-             WHERE i.id = $1`,
-            [r3.rows[0].id]
-        );
-
-        return res.status(201).json({
-            msg: "Ingresso vendido com sucesso",
-            ingresso: r4.rows[0]
-        });
-
+        const r4 = await db.query(`${SELECT_INGRESSO} WHERE i.id = $1`, [r3.rows[0].id])
+        return res.status(201).json({ msg: "Ingresso vendido com sucesso", ingresso: r4.rows[0] })
     } catch (error) {
         return res.status(400).json({
             msg: error.message
         });
     }
 });
-//editar ingresso 
+
+
+//editar ingresso
 router.put("/:id", async (req, res) => {
     try {
         const id = Number(req.params.id)
@@ -154,7 +138,6 @@ router.put("/:id", async (req, res) => {
         const r4 = await db.query("SELECT i.id, i.usuario_id, u.nome AS nome_usuario, s.nome AS nome_show, i.lote_id, li.tipo, li.preco  FROM  ingresso i JOIN lote_ingresso li ON li.id = i.lote_id JOIN show s ON s.id = li.show_id JOIN usuario u ON u.id = i.usuario_id WHERE i.id = $1", [id])
         return res.status(200).json({ msg: "Ingresso editado com sucesso", ingresso: r4.rows[0] })
 
-
     } catch (error) {
         return res.status(400).json({ msg: error.message })
     }
@@ -177,7 +160,6 @@ router.delete("/:id", async (req, res) => {
         return res.status(400).json({ msg: error.message });
     }
 })
-
 
 
 module.exports = router;

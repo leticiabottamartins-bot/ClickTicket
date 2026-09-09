@@ -14,9 +14,30 @@ router.get("/", async (req, res) => {
     }
 })
 
+//devolver ingressos por faixa de preço
+router.get("/faixadepreco", async (req, res) => {
+    try {
+        const minimo = Number(req.query.minimo);
+        const maximo = Number(req.query.maximo);
+        if (!Number.isFinite(minimo) || minimo < 0 || !Number.isFinite(maximo)) {
+            throw new Error("Mínimo e máximo inválidos")
+        }
+        const r = await db.query(
+            "SELECT li.id, li.show_id, s.nome AS nome_show, li.tipo, li.preco, li.quantidade FROM lote_ingresso li JOIN show s ON s.id = li.show_id WHERE li.preco >= $1 AND li.preco <= $2",
+            [minimo, maximo]
+        )
+        if (!r.rowCount) {
+            throw new Error("Não foi possivel encontrar ingressos nessa faixa de preço")
+        }
+        return res.status(200).json(r.rows)
+    } catch (error) {
+        return res.status(400).json({ msg: error.message })
+    }
+})
+
 router.get("/:id", async (req, res) => {
     try {
-        const id = req.params.id;
+        const id = Number(req.params.id);
         if (!Number.isInteger(id)) {
             throw new Error("ID do lote inválido")
         }
@@ -32,8 +53,10 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try {
-        const { show_id, tipo, preco, quantidade } = req.body || {};
-        if (!Number.isInteger(Number(show_id)) || !Number.isInteger(Number(quantidade)) || !tipo || !preco) {
+        const { tipo, preco, quantidade } = req.body || {};
+        const show_id = Number(req.body.show_id);
+        const quantidadeNum = Number(quantidade);
+        if (!Number.isInteger(show_id) || !Number.isInteger(quantidadeNum) || !tipo || !preco) {
             throw new Error("Parâmetros inválidos")
         }
         const r5 = await db.query("SELECT * FROM show WHERE id = $1", [show_id])
