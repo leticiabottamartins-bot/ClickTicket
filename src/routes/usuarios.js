@@ -6,7 +6,7 @@ const router = express.Router();
 // gettar usuarios
 router.get("/", async (req, res) =>{
     try{    
-        const r = await db.query("SELECT id, nome, cpf, ano_nasc, gosto, email FROM usuario");
+        const r = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email FROM usuario u LEFT JOIN genero_musical g ON u.gosto_id = g.id");
         if (!r.rowCount){
             throw new Error("Usuários não encontrados")
         }
@@ -20,11 +20,11 @@ router.get("/", async (req, res) =>{
 //gettar usuarios por id
 router.get("/:id", async (req, res) =>{
     try{    
-        const id = req.params.id;
+        const id =  Number(req.params.id);
         if (!Number.isInteger(id)){
             throw new Error("ID inválido")
         }
-        const r = await db.query("SELECT nome, cpf, ano_nasc, gosto, email FROM usuario WHERE id = $1", [id]);
+        const r = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email FROM usuario u JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [id]);
         if (!r.rowCount){
             throw new Error("Usuário não encontrado")
         }
@@ -39,6 +39,8 @@ router.get("/:id", async (req, res) =>{
 router.post("/", async (req,res) =>{
     try {
         const {nome, cpf, ano_nasc, gosto, email, senha} = req.body || {};
+        gosto = Number (gosto);
+        ano_nasc = Number (ano_nasc)
         if (!nome || !cpf || !ano_nasc || !email || !senha){
             throw new Error("Parâmetros inválidos")
         }
@@ -54,16 +56,17 @@ router.post("/", async (req,res) =>{
         if (!email.includes("@") || !email.includes(".com")){
             throw new Error("Email inválido")
         }
-        if (!Number.isInteger(generoMusical)) {
+        if (!Number.isInteger(gosto)) {
             throw new Error ("ID do genero musical inválido")
         }
         
         
-        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, gosto_id, email, senha) VALUES ($1, $2, $3, $4, $5, $6) RETURNING nome, cpf, ano_nasc, gosto_id, email", [nome, cpf, ano_nasc, gosto, email, senha ]);
+        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, gosto_id, email, senha) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", [nome, cpf, ano_nasc, gosto, email, senha ]);
         if (!r.rowCount){
             throw new Error("Erro ao cadastrar usuário")
         }
-        return res.status(201).json({msg: "Uhull, bem vindo!", usuario:r.rows[0]});
+        const r2 = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email FROM usuario u JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [r.rows[0].id]);
+        return res.status(201).json({msg: "Uhull, bem vindo!", usuario:r2.rows[0]});
         
     } catch (error) {
         return res.status(400).json({msg:error.message});
@@ -73,7 +76,7 @@ router.post("/", async (req,res) =>{
 //editar usuario
 router.put("/:id", async (req,res) =>{
     try {
-        const id = req.params.id;
+        const id = Number(req.params.id);
 
 
         const {nome, cpf, ano_nasc, gosto, email, senha} = req.body || {};
@@ -95,7 +98,7 @@ router.put("/:id", async (req,res) =>{
         if (!email.includes("@") || !email.includes(".com")){
             throw new Error("Email inválido")
         }
-        if (!Number.isInteger(generoMusical)) {
+        if (!Number.isInteger(gosto)) {
             throw new Error ("ID do gênero musical inválido")
         }
 
@@ -104,7 +107,8 @@ router.put("/:id", async (req,res) =>{
         if (!r.rowCount){
             throw new Error("Não foi possível editar o usuário: ele não existe")
         }
-        return res.status(200).json({msg: "Usuário editado com sucesso!", usuario: r.rows[0]});
+        const r1 = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email FROM usuario u JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [id]);
+        return res.status(200).json({msg: "Usuário editado com sucesso!", usuario: r1.rows[0]});
         
     } catch (error) {
         return res.status(400).json({msg:error.message})
@@ -114,11 +118,11 @@ router.put("/:id", async (req,res) =>{
 //deletar usuario
 router.delete("/:id", async (req,res) =>{
     try {
-        const id = req.params.id;
-        if (!id){
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)){
             throw new Error("Id inválido")
         }
-        const r1 = await db.query("DELETE FROM ingresso WHERE usuario_id = $1", [id])
+
         const r2 = await db.query("DELETE FROM usuario WHERE id=$1", [id])
         if(!r2.rowCount){
             throw new Error("Não foi possível deletar o usuário: ele não existe")

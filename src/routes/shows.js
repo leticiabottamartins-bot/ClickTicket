@@ -4,7 +4,7 @@ const db = require("../db");
 
 router.get("/", async (req, res) => {
     try {
-        const r = await db.query("SELECT * FROM show;");
+        const r = await db.query("SELECT s.id, s.nome, s.data, l.nome AS local FROM show s JOIN local l ON s.local_id = l.id ;");
         if (!r.rowCount) {
             throw new Error("Shows não encontrados")
         }
@@ -20,7 +20,7 @@ router.get("/:id", async (req, res) => {
         if (!Number.isInteger(id)) {
             throw new Error("ID invalido")
         }
-        const r = await db.query("SELECT * FROM show WHERE id = $1", [id])
+        const r = await db.query("SELECT s.id, s.nome, s.data, l.nome AS local FROM show s JOIN local l ON s.local_id = l.id WHERE s.id = $1", [id])
         if (!r.rowCount) {
             throw new Error("Show com este ID não encontrado")
         }
@@ -32,8 +32,10 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try {
-        const { nome, data, horario} = req.body || {}
-        const genero = req.body.genero || {};
+        const { nome, data, horario } = req.body || {}
+        if (!nome || !data || !horario) {
+            throw new Error("Parâmetros inválidos");
+        }
         const [dia, mes, ano] = data.split("/");
         const [hora, minuto] = horario.split(":");
         const dataRecebida = new Date(
@@ -58,12 +60,13 @@ router.post("/", async (req, res) => {
         if (!r1.rowCount) {
             throw new Error("Local não existe");
         } else {
-            const r2 = await db.query ("SELECT * FROM show WHERE local_id = $1 AND data = $2", [local_id, dataRecebida.toISOString()]);
+            const r2 = await db.query("SELECT * FROM show WHERE local_id = $1 AND data = $2", [local_id, dataRecebida.toISOString()]);
             if (r2.rowCount) {
-                throw new Error ("Um show já acontecerá nessa mesmo local e data.")
+                throw new Error("Um show já acontecerá nessa mesmo local e data.")
             }
             const r3 = await db.query("INSERT INTO show (nome, data, local_id) VALUES ($1, $2, $3) RETURNING *", [nome, dataRecebida.toISOString(), local_id])
-            return res.status(200).json({ msg: "Show adicionado", nome: r3.rows[[0]] })
+            const r4 = await db.query("SELECT s.id, s.nome, s.data, l.nome AS local FROM show s JOIN local l ON s.local_id = l.id WHERE s.id = $1", [r3.rows[0].id])
+            return res.status(201).json({ msg: "Show adicionado", show: r4.rows[0] })
         }
 
 
@@ -85,6 +88,9 @@ router.put("/:id", async (req, res) => {
         }
         const data = req.body.data;
         const horario = req.body.horario;
+        if (!nome || !data || !horario) {
+            throw new Error("Parâmetros inválidos");
+        }
         const [dia, mes, ano] = data.split("/");
         const [hora, minuto] = horario.split(":");
         const dataRecebida = new Date(
@@ -104,15 +110,16 @@ router.put("/:id", async (req, res) => {
         if (!r1.rowCount) {
             throw new Error("Local não existe");
         } else {
-            const r2 = await db.query ("SELECT * FROM show WHERE local_id = $1 AND data = $2", [local_id, dataRecebida.toISOString()]);
+            const r2 = await db.query("SELECT * FROM show WHERE local_id = $1 AND data = $2 AND id <> $3", [local_id, dataRecebida.toISOString(), id]);
             if (r2.rowCount) {
-                throw new Error ("Um show já acontecerá nessa mesmo local e data.")
+                throw new Error("Um show já acontecerá nessa mesmo local e data.")
             }
-            const r3 = await db.query("UPDATE show SET nome = $1, data = $2, local_id = $3 WHERE id = $4", [nome, dataRecebida.toISOString(), local_id, id])
+            const r3 = await db.query("UPDATE show SET nome = $1, data = $2, local_id = $3 WHERE id = $4 RETURNING *", [nome, dataRecebida.toISOString(), local_id, id])
             if (!r3.rowCount) {
-                throw new Error ("Nao foi possivel alterar o show")
+                throw new Error("Nao foi possivel alterar o show")
             }
-            return res.status(200).json({ msg: "Show adicionado", show: r3.rows[0] })
+            const r4 = await db.query("SELECT s.id, s.nome, s.data, l.nome AS local FROM show s JOIN local l ON s.local_id = l.id WHERE s.id = $1", [r3.rows[0].id])
+            return res.status(200).json({ msg: "Show adicionado", show: r4.rows[0] })
         }
 
 
@@ -138,23 +145,36 @@ router.delete("/:id", async (req, res) => {
 });
 
 //recomendar shows q ocorrerao em tres meses
-router.get("/embreve", async (req, res)=> {
-    try{
-        const id= Number(req.params.id)
-        if (!Number.isInteger(id)) {
-            throw new Error ("ID inválido")
-        }
-        const r = await db.query ("SELECT * FROM show WHERE data BETWEEN CURRENT TIME_STAMP AND CURRENT TIME_STAMP + INTERVAL '3 months'")
+router.get("/embreve", async (req, res) => {
+    try {
+        const r = await db.query("SELECT * FROM show WHERE data BETWEEN CURRENT TIME_STAMP AND CURRENT TIME_STAMP + INTERVAL '3 months'")
         if (!r.rowCount) {
-            throw new Error ("Nenhum show nos próximos três meses")
+            throw new Error("Nenhum show nos próximos três meses")
         }
         return res.status(200).json(r.rows)
-    }catch(error) {
-        return res.status(400).json({msg: error.message})
+    } catch (error) {
+        return res.status(400).json({ msg: error.message })
     }
 })
 
 //shows mais populares
 
 //faturamento de um show
+
+//shows por local
+router.get("/local/:id", async (req, res) => {
+    try {
+        const id = Number(req.params.id)
+        if (!Number.isInteger(id)) {
+            throw new Error("ID inválido")
+        }
+        const r = await db.query("SELECT * FROM show WHERE local_id = $1 ", [id])
+        if (!r.rowCount) {
+            throw new Error("Show ness local não encontrados")
+        }
+        return res.status(200).json(r.rows)
+    } catch (error) {
+        return res.status(400).json({ msg: error.message })
+    }
+})
 module.exports = router;

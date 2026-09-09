@@ -34,7 +34,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { nome, nacionalidade, tipo, generoMusical } = req.body || {}
+    const { nome, nacionalidade, tipo, genero_musical_id} = req.body || {}
 
     if (!nome || nome.length < 2) {
       throw new Error("Nome incompleto" );
@@ -42,10 +42,10 @@ router.post("/", async (req, res) => {
       throw new Error("Nacionalidade incompleta" );
     } else if (!tipo || tipo.length < 2) {
       throw new Error("Tipo incompleto" );
-    } else if (!Number.isInteger(generoMusical)) {
+    } else if (!Number.isInteger(Number(genero_musical_id))) {
       throw new Error("ID do Gênero musical inválido" );
     } else {
-      const r = await db.query("INSERT INTO atracao (nome, nacionalidade, tipo, genero_musical_id) VALUES ($1, $2, $3, $4) RETURNING *", [nome, nacionalidade, tipo, generoMusical]);
+      const r = await db.query("INSERT INTO atracao (nome, nacionalidade, tipo, genero_musical_id) VALUES ($1, $2, $3, $4) RETURNING *", [nome, nacionalidade, tipo, genero_musical_id]);
       if (!r.rowCount) {
         throw new Error("Atração não adicionada");
       } else {
@@ -59,17 +59,17 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     let id = req.params.id;
-    let { nome, nacionalidade, tipo, generoMusical} = req.body || {}
+    let { nome, nacionalidade, tipo, genero_musical_id} = req.body || {}
     if (!nome || nome.length < 2) {
       throw new Error("Nome incompleto")
     } else if (!nacionalidade || nacionalidade.length < 2) {
       throw new Error("Nacionalidade incompleta")
     } else if (!tipo || tipo.length < 2) {
       throw new Error("Tipo incompleto")
-    }else if (!Number.isInteger(generoMusical)){
+    }else if (!Number.isInteger(Number(genero_musical_id))){
       throw new Error ("ID do gênero musical inválido")
     } else {
-      const r = await db.query("UPDATE atracao SET nome = $1, nacionalidade = $2, tipo = $3, genero_musical_id = $4 WHERE id = $5 RETURNING *", [nome, nacionalidade, tipo,generoMusical, id]);
+      const r = await db.query("UPDATE atracao SET nome = $1, nacionalidade = $2, tipo = $3, genero_musical_id = $4 WHERE id = $5 RETURNING *", [nome, nacionalidade, tipo,genero_musical_id, id]);
       if (!r.rowCount) {
         throw new Error("Atração não editada")
       } else {

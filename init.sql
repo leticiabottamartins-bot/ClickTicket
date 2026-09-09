@@ -46,11 +46,11 @@ CREATE TABLE show (
     nome VARCHAR(60) NOT NULL,
     data TIMESTAMPTZ NOT NULL,
     local_id INT NOT NULL,
-    genero VARCHAR(50),
 
     CONSTRAINT show_local_fk
         FOREIGN KEY (local_id)
-        REFERENCES local(id),
+        REFERENCES local(id)
+        ON DELETE CASCADE,
 
     CONSTRAINT show_nome_ck
         CHECK (TRIM(nome) <> '')
@@ -63,7 +63,7 @@ CREATE TABLE usuario (
     ano_nasc INT NOT NULL,
     gosto_id INT,
     email VARCHAR(100) NOT NULL,
-    senha VARCHAR(80) NOT NULL
+    senha VARCHAR(80) NOT NULL,
 
     CONSTRAINT usuario_cpf_uq
         UNIQUE (cpf),
@@ -82,35 +82,19 @@ CREATE TABLE usuario (
 
 );
 
-CREATE TABLE ingresso (
-    id SERIAL PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    lote_id INT NOT NULL,
-    preco_pago NUMERIC(10,2) NOT NULL,
-    data_compra TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT ingresso_usuario_fk
-        FOREIGN KEY (usuario_id)
-        REFERENCES usuario(id),
-
-    CONSTRAINT ingresso_lote_fk
-        FOREIGN KEY (lote_id)
-        REFERENCES lote_ingresso(id),
-
-    CONSTRAINT ingresso_preco_pago_ck
-        CHECK (preco_pago >= 0)
-);
-
 CREATE TABLE lote_ingresso (
     id SERIAL PRIMARY KEY,
     show_id INT NOT NULL,
     tipo VARCHAR(25) NOT NULL,
     preco NUMERIC(10,2) NOT NULL,
     quantidade INT NOT NULL,
+    disponivel INT NOT NULL,
+   
 
     CONSTRAINT lote_ingresso_show_fk
         FOREIGN KEY (show_id)
-        REFERENCES show(id),
+        REFERENCES show(id)
+        ON DELETE CASCADE,
 
     CONSTRAINT lote_ingresso_preco_ck
         CHECK (preco >= 0),
@@ -118,9 +102,32 @@ CREATE TABLE lote_ingresso (
     CONSTRAINT lote_ingresso_quantidade_ck
         CHECK (quantidade >= 0),
 
+    CONSTRAINT lote_ingresso_disponivel_ck
+        CHECK (disponivel >= 0 AND disponivel <= quantidade),
+
     CONSTRAINT lote_ingresso_tipo_ck
         CHECK (TRIM(tipo) <> '')
 );
+
+
+CREATE TABLE ingresso (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    lote_id INT NOT NULL,
+    data_compra TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT ingresso_usuario_fk
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuario(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT ingresso_lote_fk
+        FOREIGN KEY (lote_id)
+        REFERENCES lote_ingresso(id)
+        ON DELETE CASCADE
+
+);
+
 
 CREATE TABLE show_atracao (
     show_id INT NOT NULL,
@@ -166,3 +173,70 @@ INSERT INTO genero_musical (nome) VALUES
 ('Indie'),
 ('K-pop'),
 ('Reggaeton');
+
+INSERT INTO atracao (nome, nacionalidade, tipo, genero_musical_id) VALUES
+('Jorge e Mateus', 'Brasileira', 'Dupla', 3),
+('Emicida', 'Brasileira', 'Artista', 7),
+('Ludmilla', 'Brasileira', 'Artista', 6),
+('Gilberto Gil', 'Brasileira', 'Artista', 9),
+('Jão', 'Brasileira', 'Artista', 2),
+('Alceu Valença', 'Brasileira', 'Artista', 10),
+('BaianaSystem', 'Brasileira', 'Banda', 12),
+('Natiruts', 'Brasileira', 'Banda', 13),
+('Legião Urbana', 'Brasileira', 'Banda', 1),
+('Djavan', 'Brasileira', 'Artista', 9);
+
+INSERT INTO local (nome, endereco, capacidade) VALUES
+('Arena São Carlos', 'Av. Trabalhador São-Carlense, 100', 5000),
+('Espaço Cultural Central', 'Rua das Flores, 250', 1200),
+('Centro de Eventos Municipal', 'Av. São Carlos, 1500', 3000),
+('Casa de Shows do Cerrado', 'Rua do Cerrado, 80', 800);
+
+INSERT INTO show (nome, data, local_id) VALUES
+('Festival de Música Brasileira', '2026-10-10 20:00:00-03', 1),
+('Noite do Rock Nacional', '2026-10-17 21:00:00-03', 1),
+('Festival de Cultura Nordestina', '2026-10-24 19:00:00-03', 3),
+('Rap no Cerrado', '2026-11-07 20:00:00-03', 4),
+('Samba e Pagode São Carlos', '2026-11-14 18:00:00-03', 2);
+
+INSERT INTO usuario 
+(nome, cpf, ano_nasc, gosto_id, email, senha) VALUES
+('Ana Souza', '111.111.111-11', 2005, 9, 'ana@email.com', 'senha123'),
+('Lucas Oliveira', '222.222.222-22', 2004, 1, 'lucas@email.com', 'senha456'),
+('Mariana Santos', '333.333.333-33', 2006, 7, 'mariana@email.com', 'senha789'),
+('Pedro Almeida', '444.444.444-44', 2003, 3, 'pedro@email.com', 'senha321'),
+('Julia Costa', '555.555.555-55', 2005, 6, 'julia@email.com', 'senha654');
+
+INSERT INTO show_atracao (show_id, atracao_id) VALUES
+(1, 4), 
+(1, 5), 
+(2, 9), 
+(2, 8), 
+(3, 6), 
+(3, 7), 
+(4, 2), 
+(4, 3), 
+(5, 1), 
+(5, 10); 
+
+INSERT INTO lote_ingresso
+(show_id, tipo, preco, quantidade, disponivel) VALUES
+(1, 'Pista', 50.00, 1000, 1000),
+(1, 'VIP', 120.00, 300, 300),
+(2, 'Pista', 40.00, 800, 800),
+(2, 'VIP', 100.00, 200, 200),
+(3, 'Pista', 35.00, 1500, 1500),
+(3, 'Camarote', 90.00, 150, 150),
+(4, 'Pista', 30.00, 500, 500),
+(4, 'VIP', 80.00, 100, 100),
+(5, 'Pista', 45.00, 1000, 1000),
+(5, 'VIP', 110.00, 200, 200);
+
+INSERT INTO ingresso (usuario_id, lote_id) VALUES
+(1, 1),
+(2, 3),
+(3, 7),
+(4, 5),
+(5, 9),
+(1, 2),
+(3, 4);
