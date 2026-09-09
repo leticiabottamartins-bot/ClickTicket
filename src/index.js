@@ -6,6 +6,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.use(express.static('src/static'));
+
 
 app.use("/hello", require("./routes/rota"));
 app.use("/atracoes", require("./routes/atracoes"));

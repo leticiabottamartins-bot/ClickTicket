@@ -1,14 +1,421 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página inicial</title>
-</head>
-<body>
-    <h1>Bem vindo ao express_template_docker</h1>
-    <p>Teste a rota <a href="/hello">neste link</a></p>
-    <p>Bom desenvolvimento!</p>
 
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ClickTicket-Documentação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 6px;
+            line-height: 1.6;
+            background-image: url("img/background.png");
+        }
+
+        a{
+            color: white;
+        }
+
+
+
+        h1 {
+            display: flex;
+            justify-content: center;
+            color: #ffffff;
+            border-bottom: 2px solid #ecf0f1;
+            background-color: #fa487df6;
+            width: 400px;
+            border-radius: 10px;
+            font-family: monospace;
+
+        }
+
+        table {
+            width: 100%;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: large;
+            color: #ffffff;
+            border-radius: 8px;
+        }
+
+
+        td {
+            border: 1px solid #ffffff;
+            padding: 8px;
+            border-radius: 8px;
+            background-color: #ff8999;
+
+        }
+
+
+        th {
+            background: #fc4e7a;
+            border-radius: 8px;
+
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            cursor: pointer;
+        }
+
+        p.note {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Usuários</h1>
+    <table>
+        <tr>
+            <th>Método</th>
+            <th>Exemplo</th>
+            <th>Descrição</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><a href="http://localhost:3000/usuarios">"GET/usuarios"</a></td>
+            <td>Retorna lista de usuarios cadastrados</td>
+            <td>[{"id":1,"nome":"Nome","cpf":"000.000.000-00","ano_nasc":2000,"gosto":"Rock","email":"usuario@email.com"}]
+            </td>
+        </tr>
+        <tr>
+            <td> GET POR ID</td>
+            <td><a href="http://localhost:3000/usuarios/1">"GET/usuarios/1"</a></td>
+            <td>Retorna id do usuário cadastradio com o id pedido e verifica se o id é válido</td>
+            <td>{"id":1,"nome":"Nome","cpf":"000.000.000-00","ano_nasc":2000,"gosto":"Rock","email":"usuario@email.com"}
+            </td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><a href="http://localhost:3000/usuarios">"POST/usuario"</a></td>
+            <td>Cadastra um novo usuário ao sistema pedindo: nome, CPF, ano de nascimento, email e senha </td>
+            <td>{"msg":"Uhull, bem
+                vindo!","usuario":{"id":1,"nome":"Nome","cpf":"000.000.000-00","ano_nasc":2000,"gosto":"Rock","email":"usuario@email.com"}}
+            </td>
+        </tr>
+        <tr>
+            <td>PUT POR ID</td>
+            <td><a href="http://localhost:3000/usuarios/1">"PUT/usuarios/1"</a></td>
+            <td>Edita informações de um usuario já cadastrado usando seu id para achá-lo, verifica se o id é válido e
+                verifica se todos os campos estão preenchidos corretamente</td>
+            <td>{"msg":"Usuário editado com
+                sucesso!","usuario":{"id":1,"nome":"Nome","cpf":"000.000.000-00","ano_nasc":2000,"gosto":"Rock","email":"usuario@email.com"}}
+            </td>
+        </tr>
+        <tr>
+            <td> DELETE POR ID </td>
+            <td><a href="http://localhost:3000/usuarios/1">"DELETE/usuarios/1"</a></td>
+            <td>deleta um usuario ja cadastrado usando seu id e verifica se o id é válido </td>
+            <td>{"msg":"Usuário deletado com sucesso!"}</td>
+        </tr>
+        <tr>
+            <td>GET RECOMENDACAO POR ID</td>
+            <td><a href="http://localhost:3000/usuarios/1/recomendacoes">"GET/usuarios/1/recomendacoes"</a></td>
+            <td>recomenda shows para o usuário</td>
+            <td>{"gosto":"Rock","shows":[]}</td>
+        </tr>
+    </table>
+    <h1>Shows</h1>
+    <table>
+        <tr>
+            <th>método</th>
+            <th>Exemplo</th>
+            <th>Descrição</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><a href="http://localhost:3000/shows">"GET/shows"</a></td>
+            <td>lista todos os shows cadastrados</td>
+            <td>[{"id":1,"nome":"Show","data":"2026-10-10","horario":"20:00:00"}]</td>
+        </tr>
+        <tr>
+            <td>GET EM BREVE</td>
+            <td><a href="http://localhost:3000/shows/embreve">"GET/shows/embreve"</a></td>
+            <td>recomenda shows que ocorrerão em três meses</td>
+            <td>[{"id":1,"nome":"Show","data":"2026-10-10","horario":"20:00:00"}]</td>
+        </tr>
+        <tr>
+            <td>GET POPULARES</td>
+            <td><a href="http://localhost:3000/shows/populares">"GET/shows/populares"</a></td>
+            <td>listas os shows que mais venderam ingressos</td>
+            <td>[{"id":1,"nome":"Show","vendas":100}]</td>
+        </tr>
+        <tr>
+            <td>GET POR ID</td>
+            <td><a href="http://localhost:3000/shows/1">"GET/shows/1"</a></td>
+            <td>mostra as informações do show cadastrado pelo id pedido e verifica seo id é válido</td>
+            <td>{"id":1,"nome":"Show","data":"2026-10-10","horario":"20:00:00"}</td>
+        </tr>
+        <tr>
+            <td>GET FATURAMENTO</td>
+            <td><a href="http://localhost:3000/shows/faturamento/1">"GET/shows/faturamento/1</a></td>
+            <td>mostra o faturamento de um show com o id pedido</td>
+            <td>{"id_show":1,"faturamento":1000}</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><a href="http://localhost:3000/shows">"POST/shows"</a></td>
+            <td>cadastra um novo show ao banco de dados pedindo: nome, data (dia/mes/ano) e horario(hora/minuto) e
+                comparando com o tempo presente </td>
+            <td>{"msg":"Show adicionado","show":{"id":1,"nome":"Show"}}</td>
+        </tr>
+        <tr>
+            <td>PUT POR ID</td>
+            <td><a href="http://localhost:3000/shows/1">"PUT/show/1"</a></td>
+            <td>Edita as informações de show já cadastrado usando o id para achá-lo,verifica se o id é válido e verifica
+                se todos os campos estão preenchidos corretamente</td>
+            <td>{"msg":"Show editado","show":{"id":1,"nome":"Show"}}</td>
+        </tr>
+        <tr>
+            <td>DELETE POR ID</td>
+            <td><a href="http://localhost:3000/shows/1">"DELETE/shows/1"</a></td>
+            <td>deleta um show do banco de dados usando o id para achá-lo e verifica se o id é válido</td>
+            <td>{"msg":"Show deletado!"}</td>
+        </tr>
+    </table>
+    <h1>Ingressos</h1>
+    <table>
+        <tr>
+            <th>método</th>
+            <th>Exemplo</th>
+            <th>Descrição</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><a href="http://localhost:3000/ingressos">"GET/ingressos"</a></td>
+            <td>Lista todos os ingressos cadastrados no banco de dados </td>
+            <td>[{"id":1,"usuario_id":1,"lote_id":1}]</td>
+        </tr>
+        <tr>
+            <td>GET POR ID</td>
+            <td><a href="http://localhost:3000/ingressos/1">"GET/ingressos/1"</a></td>
+            <td>mostra o ingresso cadastrado com o id pedido e verifica se o id é válido</td>
+            <td>{"id":1,"usuario_id":1,"lote_id":1}</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><a href="http://localhost:3000/ingressos">"POST/ingressos"</a></td>
+            <td>cadastra um novo ingresso no banco de dados pedindo: o id do usuario e id do lote</td>
+            <td>{"msg":"Ingresso vendido com sucesso","ingresso":{"id":1,"usuario_id":1,"lote_id":1}}</td>
+        </tr>
+        <tr>
+            <td>PUT POR ID</td>
+            <td><a href="http://localhost:3000/ingressos/1">"PUT/shows/1"</a></td>
+            <td>edita informações de um ingresso usando o id para achá-lo,verifica se o id é válido e verifica se todos
+                os campos estão preenchidos corretamente</td>
+            <td>{"msg":"Ingresso editado com sucesso","ingresso":{"id":1,"usuario_id":1,"lote_id":1}}</td>
+        </tr>
+        <tr>
+            <td>DELETE POR ID</td>
+            <td><a href="http://localhost:3000/ingressos/1">"DELETE/shows/1"</a></td>
+            <td>Deleta um ingresso do banco de dados usando id para achá-lo e verifica se o id é válido</td>
+            <td>{"msg":"Ingresso deletado com sucesso!"}</td>
+        </tr>
+    </table>
+    <h1>Atrações</h1>
+    <table>
+        <tr>
+            <th>método</th>
+            <th>Exemplo</th>
+            <th>Descrição</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><a href="http://localhost:3000/atracoes">"GET/atracoes"</a></td>
+            <td>Lista todos as atrações cadastradas no banco de dados </td>
+            <td>[{"id":1,"nome":"Banda","nacionalidade":"Brasil","tipo":"Banda","genero_id":1}]</td>
+        </tr>
+        <tr>
+            <td>GET POR ID</td>
+            <td><a href="http://localhost:3000/atracoes/1">"GET/atracoes/1"</a></td>
+            <td>mostra a atração cadastrada com o id pedido e verifica se o id é válido</td>
+            <td>{"id":1,"nome":"Banda","nacionalidade":"Brasil","tipo":"Banda","genero_id":1}</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><a href="http://localhost:3000/atracoes">"POST/atracoes"</a></td>
+            <td>cadastra um novo ingresso no banco de dados pedindo: nome, nacionalidade, tipo e id do gênero musical
+            </td>
+            <td>{"msg":"Uhuuul, atração
+                adicionada!","atracao":{"id":1,"nome":"Banda","nacionalidade":"Brasil","tipo":"Banda","genero_id":1}}
+            </td>
+        </tr>
+        <tr>
+            <td>PUT POR ID</td>
+            <td><a href="http://localhost:3000/atracoes/1">"PUT/atracoes/1"</a></td>
+            <td>edita informações de uma atração usando o id para achá-lo, verificase o id é válido e verifica se todos
+                os campos estão preenchidos corretamente</td>
+            <td>{"msg":"Uhuul, atração
+                editada!","atracao":{"id":1,"nome":"Banda","nacionalidade":"Brasil","tipo":"Banda","genero_id":1}}</td>
+        </tr>
+        <tr>
+            <td>DELETE POR ID</td>
+            <td><a href="http://localhost:3000/atracoes/1">"DELETE/atracoes/1"</a></td>
+            <td>Deleta uma atração do banco de dados usando id para achá-lo e verificase o id é válido</td>
+            <td>{"msg":"Atração apagada!"}</td>
+        </tr>
+    </table>
+    <h1>Gêneros</h1>
+    <table>
+        <tr>
+            <th>método</th>
+            <th>Exemplo</th>
+            <th>Descrição</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><a href="http://localhost:3000/generos">"GET/generos"</a></td>
+            <td>Lista todos os gêneros cadastrados no banco de dados </td>
+            <td>[{"id":1,"nome":"Rock"}]</td>
+        </tr>
+        <tr>
+            <td>GET POR ID</td>
+            <td><a href="http://localhost:3000/generos/1">"GET/generos/1"</a></td>
+            <td>mostra o gênero cadastrado com o id pedido e verifica se o id é válido</td>
+            <td>{"id":1,"nome":"Rock"}</td>
+        </tr>
+    </table>
+    <h1>Locais</h1>
+    <table>
+        <tr>
+            <th>método</th>
+            <th>Exemplo</th>
+            <th>Descrição</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><a href="http://localhost:3000/locais">"GET/locais"</a></td>
+            <td>Lista todos os locais cadastrados no banco de dados </td>
+            <td>[{"id":1,"nome":"Arena","endereco":"Rua A, 100","capacidade":1000}]</td>
+        </tr>
+        <tr>
+            <td>GET COM SHOW</td>
+            <td><a href="http://localhost:3000/locais/comshow">"GET/locais/comshow"</a></td>
+            <td>mostra locais que já tem shows marcados</td>
+            <td>[{"id":1,"nome":"Arena","endereco":"Rua A, 100","capacidade":1000}]</td>
+        </tr>
+        <tr>
+            <td>GET POR ID</td>
+            <td><a href="http://localhost:3000/locais/1">"GET/locais/1"</a></td>
+            <td>mostra o local cadastrado com o id pedido e verifica se o id é válido</td>
+            <td>{"id":1,"nome":"Arena","endereco":"Rua A, 100","capacidade":1000}</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><a href="http://localhost:3000/locais">"POST/locais"</a></td>
+            <td>cadastra um novo local no banco de dados pedindo: nome, endereço e capacidade</td>
+            <td>{"msg":"Local criado com sucesso :)","local":{"id":1,"nome":"Arena","endereco":"Rua A,
+                100","capacidade":1000}}</td>
+        </tr>
+        <tr>
+            <td>PUT POR ID</td>
+            <td><a href="http://localhost:3000/locais/1">"PUT/locais/1"</a></td>
+            <td>edita informações de um local usando o id para achá-lo e verifica se o id é válido</td>
+            <td>{"msg":"Local atualizado com sucesso :)","local":{"id":1,"nome":"Arena","endereco":"Rua A,
+                100","capacidade":1000}}</td>
+        </tr>
+        <tr>
+            <td>DELETE POR ID</td>
+            <td><a href="http://localhost:3000/locais/1">"DELETE/locais/1"</a></td>
+            <td>Deleta um local do banco de dados usando id para achá-lo e verificase o id é valido</td>
+            <td>{"msg":"Local deletado com sucesso :)"}</td>
+        </tr>
+    </table>
+    <h1>ShowsAtrações</h1>
+    <table>
+        <tr>
+            <th>método</th>
+            <th>Exemplo</th>
+            <th>Descrição</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><a href="http://localhost:3000/showsAtracoes">"GET/showsAtracoes"</a></td>
+            <td>Lista todos os shows com atrações cadastrados </td>
+            <td>[{"id":1,"nome":"Show","atracoes":[]}]</td>
+        </tr>
+        <tr>
+            <td>GET POR ID</td>
+            <td><a href="http://localhost:3000/showsAtracoes/1">"GET/showsAtracoes/1"</a></td>
+            <td>retorna todas as atracoes de um show pelo id e verifica se o id é válido</td>
+            <td>{"id":1,"nome":"Show","atracoes":[]}</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><a href="http://localhost:3000/showsAtracoes">"POST/showsAtracoes"</a></td>
+            <td>adiciona atrações a um show pedindo: id da atração e id do show</td>
+            <td>{"msg":"Atrações adicionadas ao
+                show!","ID_show":1,"nome_show":"Show","ID_atracao":1,"nome_atracao":"Banda"}</td>
+        </tr>
+        <tr>
+            <td>PUT POR ID</td>
+            <td><a href="http://localhost:3000/showsAtracoes/1/2">"PUT/showsAtracoes/1</a></td>
+            <td>atualiza as informaçoes de uma atração de um show, verifica se todas estão corretamente preenchidas e
+                verfica se o id é válido</td>
+            <td>{"msg":"Atração do show editada com
+                sucesso!","ID_show":1,"nome_show":"Show","ID_atracao":2,"nome_atracao":"Banda"}</td>
+        </tr>
+        <tr>
+            <td>DELETE POR ID</td>
+            <td><a href="http://localhost:3000/showsAtracoes/1/2">"DELETE/showsatracoes/1"</a></td>
+            <td>deleta atração de um show e verifica se o id é válido</td>
+            <td>{"msg":"Atração cancelada no show!"}</td>
+        </tr>
+    </table>
+    <h1>Lotes</h1>
+    <table>
+        <tr>
+            <th>Método</th>
+            <th>Exemplo</th>
+            <th>Descrição</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><a href="http://localhost:3000/lotes">"GET/lotes"</a></td>
+            <td>Lista todos os lotes do banco de dados</td>
+            <td>[{"show_id":1,"id":1,"nome_show":"Show","tipo":"Inteira","preco":50,"quantidade":100,"disponivel":100}]
+            </td>
+        </tr>
+        <tr>
+            <td>GET POR FAIXA DE PREÇO</td>
+            <td><a
+                    href="http://localhost:3000/lotes/faixadepreco?minimo=0&amp;maximo=200">"GET/lotes/faixadepreco/R$2,00"</a>
+            </td>
+            <td>Listar ingressos com uma faixa que preço específica</td>
+            <td>[{"id":1,"show_id":1,"nome_show":"Show","tipo":"Inteira","preco":50,"quantidade":100}]</td>
+        </tr>
+        <tr>
+            <td>GET POR ID</td>
+            <td><a href="http://localhost:3000/lotes/1">"GET/lotes/1"</a></td>
+            <td>Mostra o lotes com o id informado</td>
+            <td>{"show_id":1,"id":1,"nome_show":"Show","tipo":"Inteira","preco":50,"quantidade":100,"disponivel":100}
+            </td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><a href="http://localhost:3000/lotes">"POST/lotes"</a></td>
+            <td>cadastra um novo lote no banco de dados</td>
+            <td>{"id_lote":1,"id_show":1,"nome":"Show","tipo":"Inteira","preco":50,"quantidade_ingressos":100,"disponiveis":100}
+            </td>
+        </tr>
+    </table>
 </body>
+
 </html>
