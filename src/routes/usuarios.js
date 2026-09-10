@@ -44,11 +44,11 @@ router.post("/", async (req, res) => {
         if (!nome || !cpf || !ano_nasc || !email || !senha) {
             throw new Error("Parâmetros inválidos")
         }
+        if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf) || cpf.length !== 14) {
+            throw new Error("CPF inválido");
+          }
         if (nome.length < 2) {
             throw new Error("Nome inválido")
-        }
-        if (cpf.length !== 14) {
-            throw new Error("Cpf inválido")
         }
         const anoAtual = new Date().getFullYear();
         if (!Number.isInteger(ano_nasc) || ano_nasc < 1900 || ano_nasc > anoAtual) {
@@ -67,7 +67,7 @@ router.post("/", async (req, res) => {
         }
         const rcpf = await db.query("SELECT * FROM usuario WHERE cpf = $1", [cpf])
         if (rcpf.rowCount) {
-            throw new Error ("Usuário com esse cpf já está cadastrado")
+            throw new Error("Usuário com esse cpf já está cadastrado")
         }
 
 
@@ -121,7 +121,7 @@ router.put("/:id", async (req, res) => {
         }
         const rcpf = await db.query("SELECT * FROM usuario WHERE cpf = $1", [cpf])
         if (rcpf.rowCount) {
-            throw new Error ("Usuário com esse cpf já está cadastrado")
+            throw new Error("Usuário com esse cpf já está cadastrado")
         }
 
         const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, gosto_id=$4, email=$5, senha=$6 WHERE id=$7 RETURNING id, nome, cpf, ano_nasc, gosto_id, email", [nome, cpf, ano_nasc, gosto ?? null, email, senha, id]);
