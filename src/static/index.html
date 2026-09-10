@@ -174,8 +174,15 @@
         <tr>
             <td>PUT POR ID</td>
             <td><a href="http://localhost:3000/shows/1">"PUT/show/1"</a></td>
-            <td>Edita as informações de show já cadastrado usando o id para achá-lo,verifica se o id é válido e verifica
-                se todos os campos estão preenchidos corretamente</td>
+            <td>Edita as informações de show já cadastrado. Necessita do nome, local_id, data e horario.
+                {
+
+                    "nome": "Rock in Rio",
+                    "local_id": 2,
+                    "data": 04/06/2025,
+                    "horario": 22:30
+                }
+            </td>
             <td>{"msg":"Show editado","show":{"id":1,"nome":"Show"}}</td>
         </tr>
         <tr>
