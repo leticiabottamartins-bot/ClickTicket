@@ -203,32 +203,37 @@
         <tr>
             <td>GET</td>
             <td><a href="http://localhost:3000/ingressos">"GET/ingressos"</a></td>
-            <td>Lista todos os ingressos cadastrados no banco de dados </td>
+            <td>Lista todos os ingressos cadastrados </td>
             <td>[{"id":1,"usuario_id":1,"lote_id":1}]</td>
         </tr>
         <tr>
             <td>GET POR ID</td>
             <td><a href="http://localhost:3000/ingressos/1">"GET/ingressos/1"</a></td>
-            <td>mostra o ingresso cadastrado com o id pedido e verifica se o id é válido</td>
+            <td>mostra o ingresso cadastrado com o id</td>
             <td>{"id":1,"usuario_id":1,"lote_id":1}</td>
         </tr>
         <tr>
             <td>POST</td>
             <td><a href="http://localhost:3000/ingressos">"POST/ingressos"</a></td>
-            <td>cadastra um novo ingresso no banco de dados pedindo: o id do usuario e id do lote</td>
+            <td>cadastra um novo ingresso no banco de dados pedindo: o usuario_id e lote_id</td>
             <td>{"msg":"Ingresso vendido com sucesso","ingresso":{"id":1,"usuario_id":1,"lote_id":1}}</td>
         </tr>
         <tr>
             <td>PUT POR ID</td>
             <td><a href="http://localhost:3000/ingressos/1">"PUT/shows/1"</a></td>
-            <td>edita informações de um ingresso usando o id para achá-lo,verifica se o id é válido e verifica se todos
-                os campos estão preenchidos corretamente</td>
+            <td>edita informações de um ingresso {
+                "usuario_id": 1,
+                "lote_id": 1
+                }
+                </td>
             <td>{"msg":"Ingresso editado com sucesso","ingresso":{"id":1,"usuario_id":1,"lote_id":1}}</td>
         </tr>
         <tr>
             <td>DELETE POR ID</td>
             <td><a href="http://localhost:3000/ingressos/1">"DELETE/shows/1"</a></td>
-            <td>Deleta um ingresso do banco de dados usando id para achá-lo e verifica se o id é válido</td>
+            <td>Deleta um ingresso
+
+            </td>
             <td>{"msg":"Ingresso deletado com sucesso!"}</td>
         </tr>
     </table>
