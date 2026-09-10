@@ -88,22 +88,20 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
     try {
         const id = Number(req.params.id);
-        let { nome, cpf, ano_nasc, gosto, email, senha } = req.body || {};
+        let { nome, ano_nasc, gosto, email, senha } = req.body || {};
         ano_nasc = Number(ano_nasc)
         gosto = Number(gosto)
         if (!Number.isInteger(id)) {
             throw new Error("Id inválido")
         }
 
-        if (!nome || !cpf || !ano_nasc || !email || !senha) {
+        if (!nome || !ano_nasc || !email || !senha) {
             throw new Error("Parâmetros inválidos")
         }
         if (nome.length < 2) {
             throw new Error("Nome inválido")
         }
-        if (cpf.length !== 14) {
-            throw new Error("Cpf inválido")
-        }
+
         const anoAtual = new Date().getFullYear();
         if (!Number.isInteger(ano_nasc) || ano_nasc < 1900 || ano_nasc > anoAtual) {
             throw new Error("Ano inválido")
@@ -111,7 +109,7 @@ router.put("/:id", async (req, res) => {
         if (!email.includes("@") || !email.includes(".com")) {
             throw new Error("Email inválido")
         }
-        if (gosto !== undefined && gosto !== null && !Number.isInteger(gosto)) {
+        if (!Number.isInteger(gosto)) {
             throw new Error("ID do gênero musical inválido")
         }
 
@@ -119,12 +117,8 @@ router.put("/:id", async (req, res) => {
         if (!rGosto.rowCount) {
             throw new Error("Gênero musical não existe");
         }
-        const rcpf = await db.query("SELECT * FROM usuario WHERE cpf = $1", [cpf])
-        if (rcpf.rowCount) {
-            throw new Error("Usuário com esse cpf já está cadastrado")
-        }
 
-        const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, gosto_id=$4, email=$5, senha=$6 WHERE id=$7 RETURNING id, nome, cpf, ano_nasc, gosto_id, email", [nome, cpf, ano_nasc, gosto ?? null, email, senha, id]);
+        const r = await db.query("UPDATE usuario SET nome=$1, ano_nasc=$2, gosto_id=$3, email=$4, senha=$5 WHERE id=$6 RETURNING id, nome, cpf, ano_nasc, gosto_id, email", [nome, ano_nasc, gosto ?? null, email, senha, id]);
         if (!r.rowCount) {
             throw new Error("Não foi possível editar o usuário: ele não existe")
         }
