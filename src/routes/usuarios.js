@@ -65,6 +65,10 @@ router.post("/", async (req, res) => {
         if (!rGosto.rowCount) {
             throw new Error("Gênero musical não existe");
         }
+        const rcpf = await db.query("SELECT * FROM usuario WHERE cpf = $1", [cpf])
+        if (rcpf.rowCount) {
+            throw new Error ("Usuário com esse cpf já está cadastrado")
+        }
 
 
 
@@ -114,6 +118,10 @@ router.put("/:id", async (req, res) => {
         const rGosto = await db.query("SELECT * FROM genero_musical WHERE id = $1", [gosto]);
         if (!rGosto.rowCount) {
             throw new Error("Gênero musical não existe");
+        }
+        const rcpf = await db.query("SELECT * FROM usuario WHERE cpf = $1", [cpf])
+        if (rcpf.rowCount) {
+            throw new Error ("Usuário com esse cpf já está cadastrado")
         }
 
         const r = await db.query("UPDATE usuario SET nome=$1, cpf=$2, ano_nasc=$3, gosto_id=$4, email=$5, senha=$6 WHERE id=$7 RETURNING id, nome, cpf, ano_nasc, gosto_id, email", [nome, cpf, ano_nasc, gosto ?? null, email, senha, id]);
