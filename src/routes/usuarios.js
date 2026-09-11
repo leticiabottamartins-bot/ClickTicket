@@ -2,11 +2,56 @@ const express = require('express');
 const db = require("../db");
 const router = express.Router();
 
+function verificarCpf(cpf) {
+    let cpfDigitos = "";
+    let todosIguais = true;
 
+
+    for (let i = 0; i < cpf.length; i++) {
+        if (cpf[i] !== '.' && cpf[i] !== '-') {
+            cpfDigitos += cpf[i];
+
+            if (cpf[i] !== cpfDigitos[0]) {
+                todosIguais = false;
+            }
+        }
+    }
+
+    if (cpfDigitos.length !== 11 || todosIguais) {
+        return false;
+    }
+
+
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+        soma += Number(cpfDigitos[i]) * (10 - i);
+    }
+    let resto = soma % 11;
+    let digito1 = resto < 2 ? 0 : 11 - resto;
+
+    if (digito1 !== Number(cpfDigitos[9])) {
+        return false;
+    }
+
+
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+        soma += Number(cpfDigitos[i]) * (11 - i);
+    }
+    let resto2 = soma % 11;
+    let digito2 = resto2 < 2 ? 0 : 11 - resto2;
+
+
+    if (digito2 !== Number(cpfDigitos[10])) {
+        return false;
+    }
+
+    return true;
+}
 // gettar usuarios
 router.get("/", async (req, res) => {
     try {
-        const r = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email FROM usuario u LEFT JOIN genero_musical g ON u.gosto_id = g.id");
+        const r = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email, img FROM usuario u LEFT JOIN genero_musical g ON u.gosto_id = g.id");
         if (!r.rowCount) {
             throw new Error("Usuários não encontrados")
         }
@@ -24,7 +69,7 @@ router.get("/:id", async (req, res) => {
         if (!Number.isInteger(id)) {
             throw new Error("ID inválido")
         }
-        const r = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email FROM usuario u LEFT JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [id]);
+        const r = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email, img FROM usuario u LEFT JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [id]);
         if (!r.rowCount) {
             throw new Error("Usuário não encontrado")
         }
@@ -38,15 +83,16 @@ router.get("/:id", async (req, res) => {
 //postar usuario
 router.post("/", async (req, res) => {
     try {
-        let { nome, cpf, ano_nasc, gosto, email, senha } = req.body || {};
+        let { nome, cpf, ano_nasc, gosto, email, img, senha } = req.body || {};
         ano_nasc = Number(ano_nasc)
-        gosto = Number(gosto)
         if (!nome || !cpf || !ano_nasc || !email || !senha) {
             throw new Error("Parâmetros inválidos")
         }
-        if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf) || cpf.length !== 14) {
-            throw new Error("CPF inválido");
-          }
+
+        if (!verificarCpf(cpf)) {
+            throw new Error("Cpf inválido")
+        }
+
         if (nome.length < 2) {
             throw new Error("Nome inválido")
         }
@@ -57,26 +103,34 @@ router.post("/", async (req, res) => {
         if (!email.includes("@") || !email.includes(".com")) {
             throw new Error("Email inválido")
         }
-        if (gosto !== undefined && gosto !== null && !Number.isInteger(gosto)) {
-            throw new Error("ID do gênero musical inválido")
+        if (gosto !== undefined && gosto !== null) {
+            gosto = Number(gosto);
+
+            if (!Number.isInteger(gosto)) {
+                throw new Error("ID do gênero musical inválido");
+            }
         }
 
         const rGosto = await db.query("SELECT * FROM genero_musical WHERE id = $1", [gosto]);
         if (!rGosto.rowCount) {
             throw new Error("Gênero musical não existe");
         }
-        const rcpf = await db.query("SELECT * FROM usuario WHERE cpf = $1", [cpf])
+        const rcpf = await db.query("SELECT * FROM usuario WHERE cpf = $1" [cpf])
         if (rcpf.rowCount) {
             throw new Error("Usuário com esse cpf já está cadastrado")
         }
+        const remail = await db.query("SELECT * FROM usuario WHERE email = $1", [email])
+        if (remail.rowCount) {
+            throw new Error("Usuário com esse email já está cadastrado")
+        }
 
 
 
-        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, gosto_id, email, senha) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", [nome, cpf, ano_nasc, gosto, email, senha]);
+        const r = await db.query("INSERT INTO usuario(nome, cpf, ano_nasc, gosto_id, email, img, senha) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", [nome, cpf, ano_nasc, gosto, email, img, senha]);
         if (!r.rowCount) {
             throw new Error("Erro ao cadastrar usuário")
         }
-        const r2 = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email FROM usuario u LEFT JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [r.rows[0].id]);
+        const r2 = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email, img FROM usuario u LEFT JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [r.rows[0].id]);
         return res.status(201).json({ msg: "Uhull, bem vindo!", usuario: r2.rows[0] });
 
     } catch (error) {
@@ -88,9 +142,9 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
     try {
         const id = Number(req.params.id);
-        let { nome, ano_nasc, gosto, email, senha } = req.body || {};
+        let { nome, ano_nasc, gosto, email, img, senha } = req.body || {};
         ano_nasc = Number(ano_nasc)
-        gosto = Number(gosto)
+
         if (!Number.isInteger(id)) {
             throw new Error("Id inválido")
         }
@@ -98,9 +152,8 @@ router.put("/:id", async (req, res) => {
         if (!nome || !ano_nasc || !email || !senha) {
             throw new Error("Parâmetros inválidos")
         }
-        if (nome.length < 2) {
-            throw new Error("Nome inválido")
-        }
+
+
 
         const anoAtual = new Date().getFullYear();
         if (!Number.isInteger(ano_nasc) || ano_nasc < 1900 || ano_nasc > anoAtual) {
@@ -109,8 +162,12 @@ router.put("/:id", async (req, res) => {
         if (!email.includes("@") || !email.includes(".com")) {
             throw new Error("Email inválido")
         }
-        if (!Number.isInteger(gosto)) {
-            throw new Error("ID do gênero musical inválido")
+        if (gosto !== undefined && gosto !== null) {
+            gosto = Number(gosto);
+
+            if (!Number.isInteger(gosto)) {
+                throw new Error("ID do gênero musical inválido");
+            }
         }
 
         const rGosto = await db.query("SELECT * FROM genero_musical WHERE id = $1", [gosto]);
@@ -118,11 +175,16 @@ router.put("/:id", async (req, res) => {
             throw new Error("Gênero musical não existe");
         }
 
-        const r = await db.query("UPDATE usuario SET nome=$1, ano_nasc=$2, gosto_id=$3, email=$4, senha=$5 WHERE id=$6 RETURNING id, nome, cpf, ano_nasc, gosto_id, email", [nome, ano_nasc, gosto ?? null, email, senha, id]);
+        const remail = await db.query("SELECT * FROM usuario WHERE email = $1 AND id <> $2", [email, id])
+        if (remail.rowCount) {
+            throw new Error("Usuário com esse email já está cadastrado")
+        }
+
+        const r = await db.query("UPDATE usuario SET nome=$1, ano_nasc=$2, gosto_id=$3, email=$4, img = $5, senha=$6 WHERE id=$7 RETURNING id, nome, cpf, ano_nasc, gosto_id, email, img", [nome, ano_nasc, gosto ?? null, email, img ?? null, senha, id]);
         if (!r.rowCount) {
             throw new Error("Não foi possível editar o usuário: ele não existe")
         }
-        const r1 = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email FROM usuario u JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [id]);
+        const r1 = await db.query("SELECT u.id, u.nome, cpf, ano_nasc, g.nome AS gosto, email, img FROM usuario u LEFT JOIN genero_musical g ON u.gosto_id = g.id WHERE u.id = $1", [id]);
         return res.status(200).json({ msg: "Usuário editado com sucesso!", usuario: r1.rows[0] });
 
     } catch (error) {

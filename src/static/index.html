@@ -117,14 +117,14 @@
             <td><code>/usuarios</code></td>
             <td>Nenhum</td>
             <td>Lista todos os usuários cadastrados (com o nome do gênero preferido)</td>
-            <td><pre>[{"id":1,"nome":"Ana Souza","cpf":"111.111.111-11","ano_nasc":2005,"gosto":"MPB","email":"ana@email.com"}]</pre></td>
+            <td><pre>[{"id":1,"nome":"Ana Souza","cpf":"111.111.111-11","ano_nasc":2005,"gosto":"MPB","email":"ana@email.com", "img": "https://picsum.photos"}]</pre></td>
         </tr>
         <tr>
             <td>GET</td>
             <td><code>/usuarios/:id</code></td>
             <td><b>Rota:</b> <code>id</code> (inteiro)</td>
             <td>Retorna um usuário pelo ID</td>
-            <td><pre>{"id":1,"nome":"Ana Souza","cpf":"111.111.111-11","ano_nasc":2005,"gosto":"MPB","email":"ana@email.com"}</pre></td>
+            <td><pre>{"id":1,"nome":"Ana Souza","cpf":"111.111.111-11","ano_nasc":2005,"gosto":"MPB","email":"ana@email.com", "img":null}</pre></td>
         </tr>
         <tr>
             <td>POST</td>
@@ -135,19 +135,20 @@
                 <code>ano_nasc</code> (int, entre 1900 e o ano atual)<br>
                 <code>gosto</code> (int — ID de gênero musical existente, obrigatório na prática)<br>
                 <code>email</code> (string, precisa conter "@" e ".com")<br>
+                <code>img</code> (string)<br>
                 <code>senha</code> (string)
             </td>
             <td>Cadastra um novo usuário. Valida formato de CPF/e-mail, unicidade de CPF e existência do gênero musical informado</td>
-            <td><pre>{"msg":"Uhull, bem vindo!","usuario":{"id":6,"nome":"Ana Souza","cpf":"111.111.111-11","ano_nasc":2005,"gosto":"MPB","email":"ana@email.com"}}</pre></td>
+            <td><pre>{"msg":"Uhull, bem vindo!","usuario":{"id":6,"nome":"Ana Souza","cpf":"111.111.111-11","ano_nasc":2005,"gosto":"MPB","email":"ana@email.com", "img": null}}</pre></td>
         </tr>
         <tr>
             <td>PUT</td>
             <td><code>/usuarios/:id</code></td>
             <td><b>Rota:</b> <code>id</code> (inteiro)<br>
-                <b>Body (JSON):</b> <code>nome</code>, <code>ano_nasc</code>, <code>gosto</code>, <code>email</code>, <code>senha</code> (todos obrigatórios)
+                <b>Body (JSON):</b> <code>nome</code>, <code>ano_nasc</code>, <code>gosto</code>, <code>email</code>, <code>img</code>, <code>senha</code> (todos obrigatórios)
             </td>
             <td>Edita um usuário existente. Mesmas validações do POST</td>
-            <td><pre>{"msg":"Usuário editado com sucesso!","usuario":{"id":1,"nome":"Ana Souza","cpf":"111.111.111-11","ano_nasc":2005,"gosto":"MPB","email":"ana@email.com"}}</pre></td>
+            <td><pre>{"msg":"Usuário editado com sucesso!","usuario":{"id":1,"nome":"Ana Souza","cpf":"111.111.111-11","ano_nasc":2005,"gosto":"MPB","email":"ana@email.com", "img": null}}</pre></td>
         </tr>
         <tr>
             <td>DELETE</td>
@@ -510,7 +511,7 @@
         </tr>
         <tr>
             <td>GET</td>
-            <td><code>/lotes/faixadepreco</code></td>
+            <td><code>/lotes/faixadepreco?minimo=40&maximo=100</code></td>
             <td><b>Query:</b><br>
                 <code>minimo</code> (número, ≥ 0)<br>
                 <code>maximo</code> (número)

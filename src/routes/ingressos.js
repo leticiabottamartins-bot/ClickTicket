@@ -197,6 +197,7 @@ router.delete("/:id", async (req, res) => {
                 `UPDATE lote_ingresso
                  SET disponivel = disponivel + 1
                  WHERE id = $1
+                 AND disponivel < quantidade
                  RETURNING *`,
                 [lote_id]
             );

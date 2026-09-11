@@ -14,7 +14,8 @@ CREATE TABLE atracao (
     CONSTRAINT atracao_nome_ck CHECK (TRIM(nome) <> ''),
     CONSTRAINT atracao_genero_musical_fk
         FOREIGN KEY (genero_musical_id)
-        REFERENCES genero_musical(id)
+        REFERENCES genero_musical(id),
+
 );
 
 CREATE TABLE local (
@@ -45,10 +46,11 @@ CREATE TABLE show (
 CREATE TABLE usuario (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(60) NOT NULL,
-    cpf VARCHAR(14) NOT NULL,
+    cpf CHAR(14) NOT NULL,
     ano_nasc INT NOT NULL,
     gosto_id INT,
     email VARCHAR(100) NOT NULL,
+    img  VARCHAR (2048),
     senha VARCHAR(80) NOT NULL,
     CONSTRAINT usuario_cpf_uq UNIQUE (cpf),
     CONSTRAINT usuario_email_uq UNIQUE (email),

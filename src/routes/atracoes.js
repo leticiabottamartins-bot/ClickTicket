@@ -39,11 +39,29 @@ router.post("/", async (req, res) => {
       throw new Error("Nome incompleto");
     } else if (!nacionalidade || nacionalidade.length < 2) {
       throw new Error("Nacionalidade incompleta");
-    } else if (!tipo || tipo.length < 2) {
-      throw new Error("Tipo incompleto");
     } else if (!Number.isInteger(genero_musical_id)) {
       throw new Error("ID do Gênero musical inválido");
-    } else {
+    }
+    const tiposValidos = ["banda", "cantor", "cantora", "dj", "dupla", "grupo"];
+
+    if (!tipo || typeof tipo !== "string") {
+      throw new Error("Tipo de atração inválido");
+    }
+
+    tipo = tipo.trim().toLowerCase();
+
+    if (!tiposValidos.includes(tipo)) {
+      throw new Error("Tipo de atração inválido");
+    }
+    const r1 = await db.query(
+      "SELECT * FROM genero_musical WHERE id = $1",
+      [genero_musical_id]
+    );
+
+    if (!r1.rowCount) {
+      throw new Error("Gênero musical não existe");
+    }
+    else {
       const r = await db.query("INSERT INTO atracao (nome, nacionalidade, tipo, genero_musical_id) VALUES ($1, $2, $3, $4) RETURNING *", [nome, nacionalidade, tipo, genero_musical_id]);
       if (!r.rowCount) {
         throw new Error("Atração não adicionada");
@@ -65,13 +83,23 @@ router.put("/:id", async (req, res) => {
       throw new Error("Nome incompleto")
     } else if (!nacionalidade || nacionalidade.length < 2) {
       throw new Error("Nacionalidade incompleta")
-    } else if (!tipo || tipo.length < 2) {
-      throw new Error("Tipo incompleto")
     } else if (!Number.isInteger(genero_musical_id)) {
       throw new Error("ID do gênero musical inválido")
     } else if (!Number.isInteger(id)) {
       throw new Error("ID da atracão inválida")
-    } else {
+    }
+    const tiposValidos = ["banda", "cantor", "cantora", "dj", "dupla", "grupo"];
+
+    if (!tipo || typeof tipo !== "string") {
+      throw new Error("Tipo de atração inválido");
+    }
+
+    tipo = tipo.trim().toLowerCase();
+
+    if (!tiposValidos.includes(tipo)) {
+      throw new Error("Tipo de atração inválido");
+    }
+    else {
       const r1 = await db.query(
         "SELECT * FROM genero_musical WHERE id = $1",
         [genero_musical_id]
